@@ -19,6 +19,7 @@ import { getCurrentUser } from '../../services/firebaseAuth';
 import { updateStory } from '../../services/firebaseDb';
 import DeleteModal from '../../components/modals/DeleteModal';
 
+
 const CustomTextInput = React.forwardRef(({ style, ...props }, ref) => {
   return <TextInput ref={ref} style={style} {...props} />;
 });
@@ -28,6 +29,7 @@ const ReadOwnStory = ({ navigation, route }) => {
   const [menuVisible, setMenuVisible] = useState(false);
   const slideAnimation = useRef(new Animated.Value(0)).current;
   const [loading, setLoading] = useState('');
+  const [storyId, setStoryId] = useState(route.params.story.id);
   const [story, setStory] = useState(route.params.story);
   const [title, setTitle] = useState(route.params.title);
   const [editableTitle, setEditableTitle] = useState(story.title);
@@ -77,8 +79,8 @@ const ReadOwnStory = ({ navigation, route }) => {
     }
   };
 
-  const handleDeleteButtonPress = () => {
-    setDeleteModalVisible(true);
+  const deleteStoryModal = () => {
+    setDeleteModalVisible(true); // Show the delete modal
   };
 
   return (
@@ -99,6 +101,7 @@ const ReadOwnStory = ({ navigation, route }) => {
               <CustomTextInput
                 style={styles.heading}
                 value={editableTitle}
+                multiline
                 onChangeText={(text) => setEditableTitle(text)}
               />
             ) : (
@@ -106,14 +109,19 @@ const ReadOwnStory = ({ navigation, route }) => {
             )}
 
             {editMode ? (
+             <ScrollView style={styles.scrollViewStory}>
               <CustomTextInput
                 style={styles.storyBody}
                 multiline
+                scrollView
                 value={editableBody}
                 onChangeText={(text) => setEditableBody(text)}
               />
+               </ScrollView>
             ) : (
-              <Text style={styles.storyBody}>{story.story}</Text>
+              <ScrollView style={styles.scrollViewStory}>
+              <Text  scrollView style={styles.storyBody}>{story.story}</Text>
+              </ScrollView>
             )}
           </ScrollView>
         )}
@@ -156,7 +164,7 @@ const ReadOwnStory = ({ navigation, route }) => {
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.menuIcon}
-                onPress={handleDeleteButtonPress}
+                onPress={deleteStoryModal}
               >
                 <Image style={styles.menuIconImage} source={require('../../assets/bin-icon.png')} />
               </TouchableOpacity>
@@ -166,7 +174,7 @@ const ReadOwnStory = ({ navigation, route }) => {
 
         {deleteModalVisible && (
         <View style={styles.modalOverlay}>
-          <DeleteModal onClose={() => setDeleteModalVisible(false)} />
+           <DeleteModal onClose={() => setDeleteModalVisible(false)} storyId={storyId} navigation={navigation} />
         </View>
         )}
       </ImageBackground>
@@ -194,6 +202,7 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     height: height,
+    flex: 1,
   },
   scrollViewContent: {
     flex: 1,
@@ -237,10 +246,10 @@ const styles = StyleSheet.create({
     height: 50,
   },
   storyBody: {
-    width: 320,
-    height: 700,
+    width: 350,
     padding: 20,
-    marginTop: 150,
+    marginTop: 0,
+    marginLeft: -20,
     left: 0,
     color: 'white',
     fontSize: 24,
@@ -321,6 +330,22 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 3, // Make sure it appears above other elements
-  }
+  },
+  scrollViewStory: {
+    width: 330,
+    padding: 20,
+    alignSelf: 'flex-start',
+    flex: 1,
+    height: 600,
+    padding: 20,
+    paddingTop: 0,
+    marginTop: 210,
+    left: 0,
+    color: 'white',
+    fontSize: 24,
+    fontFamily: 'MagicalNight',
+    alignSelf: 'flex-start',
+    flex: 1,
+  },
   
 });

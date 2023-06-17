@@ -19,16 +19,16 @@ import { addDraftToCollection } from '../../services/firebaseDb';
 
 
 const CustomTextInput = React.forwardRef(({ style, ...props }, ref) => {
-  return <TextInput ref={ref} style={[style, { maxWidth: 350 }]} {...props} />;
+  return <TextInput ref={ref} style={style} {...props} />;
 });
 
-const WriteScreenFive = ({ navigation, route }) => {
+const ReadStory = ({ navigation, route }) => {
 
   
-
+    const {story} = route.params;
+    // console.log(story);
 
   const [fontLoaded, setFontLoaded] = useState(false);
-  const [story, setStory] = useState('');
   const [menuVisible, setMenuVisible] = useState(false);
   const slideAnimation = useRef(new Animated.Value(0)).current;
   const [loading, setLoading] = useState("");
@@ -58,81 +58,7 @@ const WriteScreenFive = ({ navigation, route }) => {
   };
 
 
-  const createStory = async () => {
-    //call firestore functionality
 
-    if(story){
-        var creatorInfo = getCurrentUser()
-
-        var BedTimeStory = {
-            title: route.params.title,
-            genre: route.params.genre,
-            prompt: route.params.prompt,
-            story,
-            creator: creatorInfo.displayName, //display who created it
-            userId: creatorInfo.uid, //to reference that user
-            votes: 0,
-            time:  Date.now(),
-        }
-
-        console.log(BedTimeStory);
-
-                
-        const success = await addBedTimeStoryToCollection(BedTimeStory)
-
-        if(success){
-            console.log("Added story successfully");
-            setLoading(false)
-            navigation.navigate('Home');
-        } else {
-            // console.log("Oops.... adding story");
-            // setLoading(true)
-            navigation.navigate('Home');
-            // Alert.alert("Oops! Something went wrong")
-        }
-    }else {
-        Alert.alert("Oops! Please add all the project info")
-    }
-  }
-
-    const createDraftStory = async () => {
-      //call firestore functionality
-  
-      if(story){
-          var creatorInfo = getCurrentUser()
-  
-          var BedTimeStory = {
-              title: route.params.title,
-              genre: route.params.genre,
-              prompt: route.params.prompt,
-              story,
-              creator: creatorInfo.displayName, //display who created it
-              userId: creatorInfo.uid, //to reference that user
-              votes: 0,
-              time: Date.now(), 
-          }
-  
-          console.log(BedTimeStory);
-  
-                  
-          const success = await addDraftToCollection(BedTimeStory)
-  
-          if(success){
-              console.log("Added story successfully");
-              setLoading(false)
-              navigation.navigate('Home');
-          } else {
-              // console.log("Oops.... adding story");
-              // setLoading(true)
-              navigation.navigate('Home');
-              // Alert.alert("Oops! Something went wrong")
-          }
-      }else {
-          Alert.alert("Oops! Please add all the project info")
-      }
-
-
-  }
 
   return (
     <ImageBackground
@@ -148,29 +74,16 @@ const WriteScreenFive = ({ navigation, route }) => {
 
       {fontLoaded && (
         <ScrollView
-          // horizontal
-          // pagingEnabled
-          // contentContainerStyle={styles.scrollViewContent}
-          // style={styles.scrollView}
+          horizontal
+          pagingEnabled
+          contentContainerStyle={styles.scrollViewContent}
+          style={styles.scrollView}
         >
           <View style={styles.page}>
             <View style={styles.bodyContainer}>
-              <Text style={styles.heading}>{route.params.title}</Text>
-              <CustomTextInput
-                style={[styles.input, { fontFamily: 'MagicalNight' }]}
-                keyboardType="default"
-                placeholder="Begin your story..."
-                value={story}
-                multiline 
-                onChangeText={(newValue) => setStory(newValue)}
-                textAlignVertical="top"
-                renderText={(textProps) => (
-                  <View>
-                    <Image source={require('../../assets/cursor.png')} style={styles.cursor} />
-                    <Text {...textProps} />
-                  </View>
-                )}
-              />
+              <Text style={styles.heading}>{story.title}</Text>
+              <Text style={styles.heading}>Title</Text>
+              <Text style={styles.storyBody}>{story.story}</Text>
             </View>
           </View>
         </ScrollView>
@@ -201,14 +114,11 @@ const WriteScreenFive = ({ navigation, route }) => {
           {/* Menu */}
           <View style={styles.menuContent}>
             {/* Menu content */}
-            <TouchableOpacity style={styles.menuIcon} onPress={createDraftStory}>
-              <Image  style={styles.menuIconImage}  source={require('../../assets/save-icon.png')} />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.menuIcon}  onPress={createStory}>
-              <Image  style={styles.menuIconImage}  source={require('../../assets/complete-icon.png')} />
+            <TouchableOpacity style={styles.menuIcon} >
+              <Image source={require('../../assets/save-icon.png')} />
             </TouchableOpacity>
             <TouchableOpacity style={styles.menuIcon}>
-              <Image  style={styles.menuIconImage}  source={require('../../assets/bin-icon.png')} />
+              <Image source={require('../../assets/heart-icon2.png')} />
             </TouchableOpacity>
           </View>
         </View>
@@ -217,7 +127,7 @@ const WriteScreenFive = ({ navigation, route }) => {
   );
 };
 
-export default WriteScreenFive;
+export default ReadStory;
 
 const { width, height } = Dimensions.get('window');
 
@@ -248,6 +158,7 @@ const styles = StyleSheet.create({
     marginTop: 80,
     flex: 1,
     alignItems: 'center',
+
   },
   heading: {
     fontFamily: 'Hensa',
@@ -256,10 +167,10 @@ const styles = StyleSheet.create({
     width: 250,
     paddingTop: 0,
     paddingLeft: 0,
-    lineHeight: 45,
+    lineHeight: 50,
     marginBottom: -10,
     marginLeft: -50,
-    textAlign: 'center' 
+    textAlign: 'center',
   },
   backButton: {
     position: 'absolute',
@@ -271,19 +182,14 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
   },
-  input: {
-    flex: 1,
-    width: '100%',
-    maxWidth: width - 60, // Adjust the maxWidth value to leave some spacing
-    padding: 10,
+  storyBody: {
+    width: 400,
+    height: 700,
+    padding: 20,
     marginTop: 30,
-    marginLeft: -60,
     color: 'white',
     fontSize: 24,
-  },
-  scrollViewContent: {
-    flexGrow: 1,
-    paddingHorizontal: 30, // Adjust the paddingHorizontal value to match the spacing in maxWidth
+    fontFamily: 'MagicalNight'
   },
   cursor: {
     position: 'absolute',
@@ -306,8 +212,7 @@ const styles = StyleSheet.create({
     height: 56,
     backgroundColor: '#3B1609',
     borderRadius: 5,
-    marginTop: 80,
-    zIndex: 99
+    marginTop:55,
   },
   tagInner: {
     position: 'absolute',
@@ -317,42 +222,22 @@ const styles = StyleSheet.create({
     height: 6,
     backgroundColor: 'none',
     borderRadius: 3,
-    color: 'none',
-    zIndex: -5
   },
   menu: {
     position: 'relative',
     width: 80,
-    height: 225,
+    height: 165,
     backgroundColor: '#867452',
     borderRadius: 30,
     marginTop: 10,
     zIndex: 2,
   },
   menuContent: {
-    paddingTop: 20,
+    paddingTop: 35,
     paddingHorizontal: 10,
   },
   menuIcon: {
-    marginBottom: 10,
+    marginBottom: 25,
     alignItems: 'center',
-    justifyContent: 'center',
-    width: 55,
-    height: 55,
-    borderRadius: 50,
-    backgroundColor: '#928263',
-  },
-  menuIconImage: {
-    width: 30,
-    height: 30,
-  },
-  menuIconActive: {
-    marginBottom: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: 55,
-    height: 55,
-    borderRadius: 50,
-    backgroundColor: '#6B8DFF', // Change this to the desired color
   },
 });

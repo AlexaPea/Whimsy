@@ -10,14 +10,16 @@ import { getCurrentUser } from '../services/firebaseAuth';
 const LibraryScreen = () => {
   const user = getCurrentUser();
   const userUid = user.uid;
-  console.log(userUid);
+  // console.log(userUid);
 
   const [fontLoaded, setFontLoaded] = useState(false);
   const [selectedGenre, setSelectedGenre] = useState('');
   const [stories, setStories] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
   const navigation = useNavigation();
-  const userId = userUid; // Replace 'USER_ID' with the actual user ID
+  const userId = userUid; 
+  const [subHeadingText, setSubHeadingText] = useState('All Stories');
+
 
   const loadFonts = async () => {
     await Font.loadAsync({
@@ -28,7 +30,7 @@ const LibraryScreen = () => {
 
   useEffect(() => {
     loadFonts();
-  }, []);
+  }, [selectedGenre, refreshing]);
 
   useFocusEffect(
     useCallback(() => {
@@ -36,12 +38,12 @@ const LibraryScreen = () => {
       return () => {
         // Cleanup when not viewing the screen
       };
-    }, [])
+    }, [selectedGenre, navigation, ])
   );
 
   const getAllStories = async () => {
     setRefreshing(true);
-    console.log("Getting data");
+    // console.log("Getting data");
     const allStories = await getAllStoriesFromCollection();
     setStories(allStories);
     setRefreshing(false);
@@ -53,6 +55,7 @@ const LibraryScreen = () => {
 
   const handleButtonPress = (genre) => {
     setSelectedGenre(genre);
+    setSubHeadingText(genre ? genre : 'All Stories');
   };
 
   return (
@@ -127,7 +130,7 @@ const LibraryScreen = () => {
             </View>
           </View>
 
-          <Text style={styles.subHeading}>My Collection</Text>
+          <Text style={styles.subHeading}>{subHeadingText}</Text>
           <ScrollView style={styles.scrollView}>
             {stories
               .filter(story => !selectedGenre || story.genre === selectedGenre)

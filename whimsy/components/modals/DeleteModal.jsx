@@ -1,8 +1,9 @@
 import { StyleSheet, Text, View, TouchableOpacity, ImageBackground } from 'react-native';
 import React, { useState } from 'react';
 import * as Font from 'expo-font';
+import { deleteStoryFromCollection } from '../../services/firebaseDb';
 
-const DeleteModal = ({ onClose }) => {
+const DeleteModal = ({ navigation, onClose, storyId  }) => {
   const [fontLoaded, setFontLoaded] = useState(false);
 
   const loadFonts = async () => {
@@ -15,6 +16,17 @@ const DeleteModal = ({ onClose }) => {
   React.useEffect(() => {
     loadFonts();
   }, []);
+
+  const handleDeleteButtonPress = async () => {
+    try {
+      await deleteStoryFromCollection(storyId);
+      navigation.navigate('Home');
+    } catch (error) {
+      console.log('Something went wrong: ' + error);
+    }
+    
+  };
+
 
   return (
     <View style={styles.container}>
@@ -30,7 +42,7 @@ const DeleteModal = ({ onClose }) => {
             <Text style={styles.body}>Once your story is deleted, you won’t be able to retrieve it.</Text>
             <TouchableOpacity style={styles.button}>
               <ImageBackground source={require('../../assets/btn/bg.png')} style={styles.btnBackground}>
-                <Text style={styles.btnText}>Delete</Text>
+                <Text style={styles.btnText} onPress={handleDeleteButtonPress}>Delete</Text>
               </ImageBackground>
             </TouchableOpacity>
           </View>

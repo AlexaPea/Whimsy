@@ -1,7 +1,7 @@
 //USER COLLECTION
 //================================================================
 
-import { Timestamp, addDoc, collection, doc, setDoc, getDocs, orderBy, query, where, getDoc } from "firebase/firestore"
+import { Timestamp, addDoc, collection, doc, setDoc, getDocs, orderBy, query, where, getDoc, deleteDoc, updateDoc } from "firebase/firestore"
 import { db } from "../firebase"
 // import { uploadToStorage } from "./firebaseStorage";
 
@@ -24,7 +24,7 @@ export const createUserInDb = async (username, email, uid) => {
 
 }
 
-//Projects COLLECTION
+//Story COLLECTION
 //================================================================
 
 
@@ -50,12 +50,13 @@ export const addDraftToCollection = async (story) => {
     }
   };
 
+
 export const getAllStoriesFromCollection = async () => {
     try {
         var stories = []
-        const snapshot = await getDocs(query(collection(db, "stories"), orderBy("title")))
+        const snapshot = await getDocs(query(collection(db, "stories"), orderBy("time","desc")))
         snapshot.forEach((doc)=> {
-            console.log(doc.id, " => ", doc.data());
+            // console.log(doc.id, " => ", doc.data());
             stories.push({...doc.data(), id: doc.id})
         })
         return stories
@@ -70,7 +71,7 @@ export const getCurrentUserStories = async (userId) => {
         var stories = []
         const snapshot = await getDocs(query(collection(db, "stories"),where("userId", "==", userId)))
         snapshot.forEach((doc)=> {
-            console.log(doc.id, " => ", doc.data());
+            // console.log(doc.id, " => ", doc.data());
             stories.push({...doc.data(), id: doc.id})
         })
         return stories
@@ -101,8 +102,153 @@ export const updateStory = async (storyId, title, body) => {
   };
   
 
+  export const deleteStoryFromCollection = async (storyId) => {
+    try {
+      // Delete the story document from the "stories" collection
+      await deleteDoc(doc(db, "stories", storyId));
+      console.log("Story deleted successfully");
+
+      onClose();
+    } catch (error) {
+      console.log("Something went wrong: " + error);
+    }
+  };
+
+
+//Bookmarked
+//================================================================================================
+  
+export const addStoryToBookmarkCollection = async (storyId, userId) => {
+  try {
+    const storyRef = doc(db, "stories", storyId);
+    const snapshot = await getDoc(storyRef);
+    const data = snapshot.data();
+    
+    // Add the user ID and story ID to the bookmarked data
+    const bookmarkedData = {
+      ...data,
+      bookmarkedBy: userId,
+      storyId: storyId
+    };
+    
+    const docRef = await addDoc(collection(db, 'bookmarks'), bookmarkedData);
+    console.log('Added story to bookmarks successfully...', docRef.id);
+  } catch (error) {
+    console.log('Something went wrong: ' + error);
+  }
+};
+
+
+  
+export const removeStoryFromBookmarkCollection = async (userId, storyId) => {
+  try {
+    const userUid = userId;
+    const bookmarkQuery = query(
+      collection(db, 'bookmarks'),
+      where('bookmarkedBy', '==', userUid),
+      where('storyId', '==', storyId)
+    );
+    const querySnapshot = await getDocs(bookmarkQuery);
+    
+    // Iterate over the matching bookmarks and delete each document
+    querySnapshot.forEach((doc) => {
+      deleteDoc(doc.ref);
+    });
+    
+    console.log("Bookmark(s) deleted successfully");
+  } catch (error) {
+    console.log("Something went wrong: " + error);
+  }
+};
+
+
+  export const isStoryBookmarked = async (userId, storyId) => {
+    const userUid = userId;
+    const bookmarkQuery = query(
+      collection(db, 'bookmarks'),
+      where('bookmarkedBy', '==', userUid),
+      where('storyId', '==', storyId)
+    );
+  
+    const querySnapshot = await getDocs(bookmarkQuery);
+    console.log(!querySnapshot.empty);
+    return !querySnapshot.empty;
+  };
+  
+//Handle Votes
+//================================================================================================
+export const updateVotes = async (storyId, votes) => {
+  try {
+    const storyRef = doc(db, "stories", storyId);
+    const snapshot = await getDoc(storyRef);
+    const data = snapshot.data();
+
+    // Merge the updated votes with the existing data
+    const updatedData = {
+      ...data,
+      votes: votes,
+    };
+
+    await updateDoc(storyRef, {
+      votes: votes
+    });
+  } catch (error) {
+    console.log("Something went wrong in db: " + error);
+    throw error;
+  }
+};
+
+export const addLikesToCollection = async (storyId, userId) => {
+  try {
+    const likeData = {
+      storyId: storyId,
+      userId: userId,
+    };
+
+    const docRef = await addDoc(collection(db, 'likes'), likeData);
+    console.log('Added like successfully...' + docRef.id);
+  } catch (error) {
+    console.log('Something went wrong: ' + error);
+    throw error;
+  }
+};
+
+export const removeLikesFromCollection = async (storyId, userId) => {
+  try {
+    const likesRef = collection(db, 'likes');
+    const querySnapshot = await getDocs(likesRef);
+
+    querySnapshot.forEach((doc) => {
+      const likeData = doc.data();
+      if (likeData.storyId === storyId && likeData.userId === userId) {
+        deleteDoc(doc.ref);
+        console.log('Removed like successfully...');
+      }
+    });
+  } catch (error) {
+    console.log('Something went wrong: ' + error);
+    throw error;
+  }
+};
+
+export const isStoryLiked = async (userId, storyId) => {
+  const userUid = userId;
+  const likeQuery = query(
+    collection(db, 'likes'),
+    where('userId', '==', userUid),
+    where('storyId', '==', storyId)
+  );
+
+  const querySnapshot = await getDocs(likeQuery);
+  console.log("Likes" +!querySnapshot.empty);
+  return !querySnapshot.empty;
+};
+
+
+
+
+
+
   
 
-export const updateUserInDb = async (userInfo, userId) => {
-
-}
+ 

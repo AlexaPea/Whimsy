@@ -4,6 +4,8 @@ import * as Font from 'expo-font';
 
 const LibraryBookCard = (props) => {
   const [fontLoaded, setFontLoaded] = useState(false);
+  const { data, number } = props;
+  const numberRank = number;
 
   useEffect(() => {
     const loadFonts = async () => {
@@ -16,14 +18,25 @@ const LibraryBookCard = (props) => {
     loadFonts();
   }, []);
 
-  // get props
-  const { data, number } = props;
-
   const [isLiked, setIsLiked] = useState(false);
 
-  const handleLike = () => {
-    setIsLiked(!isLiked);
+  useEffect(() => {
+    checkIfLiked();
+  }, []);
+
+  const checkIfLiked = async () => {
+    const userId = userUid; // Replace with the actual user ID
+    const storyId = data.id; // Replace with the actual story ID
+
+    try {
+      const liked = await isStoryLiked(userId, storyId);
+      setIsLiked(liked);
+    } catch (error) {
+      console.error('Error checking if story is liked:', error);
+      // Handle the error
+    }
   };
+
 
   return (
     <View style={styles.cardContainer}>
@@ -38,30 +51,30 @@ const LibraryBookCard = (props) => {
       <View style={styles.infoContainer}>
         {fontLoaded && (
           <View style={styles.titleContainer}>
-            <Text style={styles.number}>1.</Text>
+            <Text style={styles.number}>{numberRank}.</Text>
             <Text style={styles.title}>{data.title}</Text>
           </View>
         )}
-        <Text style={styles.author}>{data.author}</Text>
+        <Text style={styles.author}>{data.creator}</Text>
         <View style={styles.promptContainer}>
           <Text style={styles.prompt}>{data.prompt}</Text>
         </View>
       </View>
-      <View style={styles.heartCircle}>
-        <TouchableOpacity onPress={handleLike}>
-          {isLiked ? (
-            <Image
-              style={styles.heartIcon}
-              source={require('../assets/heart-icon-filled.png')}
-            />
-          ) : (
-            <Image
-              style={styles.heartIcon}
-              source={require('../assets/heart-icon-outline.png')}
-            />
-          )}
-        </TouchableOpacity>
-      </View>
+ 
+      {isLiked && (
+        <View style={styles.heartCircle}>
+          <TouchableOpacity>
+            <View style={styles.heartCircle}>
+              <TouchableOpacity>
+                <Image
+                  style={styles.heartIcon}
+                  source={require('../assets/heart-icon-filled.png')}
+                />
+              </TouchableOpacity>
+            </View>
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
   );
 };
@@ -92,7 +105,7 @@ const styles = StyleSheet.create({
   title: {
     color: 'white',
     fontWeight: '700',
-    width: 80,
+    width: 120,
     marginTop: -7
   },
   author: {

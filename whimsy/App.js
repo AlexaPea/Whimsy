@@ -18,6 +18,8 @@ import WriteScreenFour from './screens/write/WriteScreenFour';
 import WriteScreenFive from './screens/write/WriteScreenFive';
 import ReadStory from './screens/story/readStory';
 import ReadOwnStory from './screens/story/readOwnStory';
+import Cover from './screens/book/cover';
+import Contents from './screens/book/cotentsScreen';
 
 //for each nav we have, we need to go create it
 const Stack = createNativeStackNavigator();
@@ -105,6 +107,14 @@ export default function App() {
             <Stack.Screen 
               name="ReadOwnStory" 
               component={ReadOwnStory}/>
+
+            <Stack.Screen 
+              name="Cover" 
+              component={Cover}/>
+
+            <Stack.Screen 
+              name="Contents" 
+              component={Contents}/>
 
 
             </>
