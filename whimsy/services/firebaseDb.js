@@ -357,6 +357,29 @@ export const getCurrentFeaturedStories = async () => {
 }
 
 
+export const getAllBookmarkedStories = async (userId) => {
+  try {
+    const bookmarkedStories = [];
+    console.log(userId);
+    const snapshot = await getDocs(
+      query(
+        collection(db, "bookmarks"),
+        where("bookmarkedBy", "==", userId)
+      )
+    );
+    snapshot.forEach((doc) => {
+      bookmarkedStories.push({ ...doc.data(), id: doc.id });
+    });
+    console.log(bookmarkedStories);
+    return bookmarkedStories;
+  } catch (error) {
+    console.log("Error retrieving bookmarked stories:", error);
+    return [];
+  }
+};
+
+
+
 
 
 

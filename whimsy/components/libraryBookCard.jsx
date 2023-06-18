@@ -2,25 +2,23 @@ import { StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { isStoryLiked } from '../services/firebaseDb';
 import { getCurrentUser } from '../services/firebaseAuth';
+import { getCurrentFeaturedStories } from '../services/firebaseDb';
 
 const libraryBookCard = (props) => {
-
   const user = getCurrentUser();
   const userUid = user.uid;
-
-  // Get props
   const { data } = props;
-  // console.log(data);
   const [isLiked, setIsLiked] = useState(false);
+  const [isFeatured, setIsFeatured] = useState(false);
 
   useEffect(() => {
     checkIfLiked();
+    checkIfFeatured();
   }, []);
 
   const checkIfLiked = async () => {
-    const userId = userUid; // Replace with the actual user ID
-    const storyId = data.id; // Replace with the actual story ID
-
+    const userId = userUid;
+    const storyId = data.id;
     try {
       const liked = await isStoryLiked(userId, storyId);
       setIsLiked(liked);
@@ -30,7 +28,12 @@ const libraryBookCard = (props) => {
     }
   };
 
-  // Function to get the book symbol based on the genre
+  const checkIfFeatured = async () => {
+    const featuredStories = await getCurrentFeaturedStories();
+    const hasFeaturedStory = featuredStories.some((story) => story.creator === data.creator);
+    setIsFeatured(hasFeaturedStory);
+  };
+
   const getBookSymbol = (genre) => {
     switch (genre) {
       case 'Fantasy':
@@ -56,7 +59,12 @@ const libraryBookCard = (props) => {
       </View>
       <View style={styles.infoContainer}>
         <Text style={styles.title}>{data.title}</Text>
-        <Text style={styles.author}>{data.creator}</Text>
+        <View style={styles.authorContainer}>
+          {isFeatured && (
+            <Image style={styles.authorIcon} source={require('../assets/wizardHat.png')} />
+          )}
+          <Text style={styles.author}>{data.creator}</Text>
+        </View>
         <View style={styles.promptContainer}>
           <Text style={styles.prompt}>{data.prompt}</Text>
         </View>
@@ -95,6 +103,7 @@ const styles = StyleSheet.create({
   author: {
     color: 'white',
     fontWeight: '200',
+    marginLeft: 15
   },
   promptContainer: {
     backgroundColor: 'rgba(244, 238, 229, 0.3)',
@@ -156,4 +165,11 @@ const styles = StyleSheet.create({
     marginTop: 35,
     marginLeft: -30,
   },
+  authorIcon:{
+    width: 10,
+    height: 10,
+    marginRight: 5,
+    marginTop: 5,
+    position: 'absolute'
+  }
 });

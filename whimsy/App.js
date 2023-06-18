@@ -22,6 +22,7 @@ import Cover from './screens/book/cover';
 import Contents from './screens/book/cotentsScreen';
 import JudgeScreen from './screens/JudgeScreen';
 import JudgeStory from './screens/story/judgeStory';
+import OwnStoryScreen from './screens/OwnStoryScreen';
 
 //for each nav we have, we need to go create it
 const Stack = createNativeStackNavigator();
@@ -125,6 +126,14 @@ export default function App() {
             <Stack.Screen 
               name="JudgeStory" 
               component={JudgeStory}/>
+
+            <Stack.Screen 
+              name="OwnStoryScreen" 
+              component={OwnStoryScreen}/>
+
+            <Stack.Screen 
+              name="LibraryScreen" 
+              component={LibraryScreen}/>
 
 
             </>

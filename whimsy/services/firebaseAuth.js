@@ -34,9 +34,9 @@ export const signInUser = (email, password) =>{
         const user = userCredential.user;
         console.log("User: " + user.email)
         // Success Alert
-        Alert.alert("You're in!", "You have successfully logged in.",[
-            {text: 'Thanks', onPress: () => {}}
-          ])
+        // Alert.alert("You're in!", "You have successfully logged in.",[
+        //     {text: 'Thanks', onPress: () => {}}
+        //   ])
     })
     .catch((error) => {
         const errorCode = error.code;

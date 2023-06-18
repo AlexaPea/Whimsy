@@ -3,12 +3,14 @@ import React, { useState, useEffect } from 'react';
 import * as Font from 'expo-font';
 import { getCurrentUser } from '../services/firebaseAuth';
 import { isStoryLiked } from '../services/firebaseDb';
+import { getCurrentFeaturedStories } from '../services/firebaseDb';
 
 const LibraryBookCard = (props) => {
   const [fontLoaded, setFontLoaded] = useState(false);
   const { data, number } = props;
   const numberRank = number;
-  const user = getCurrentUser()
+  const user = getCurrentUser();
+  const [isFeatured, setIsFeatured] = useState(false);
 
   useEffect(() => {
     const loadFonts = async () => {
@@ -19,12 +21,14 @@ const LibraryBookCard = (props) => {
     };
 
     loadFonts();
+    
   }, []);
 
   const [isLiked, setIsLiked] = useState(false);
 
   useEffect(() => {
     checkIfLiked();
+    checkIfFeatured();
   }, []);
 
   const checkIfLiked = async () => {
@@ -32,7 +36,7 @@ const LibraryBookCard = (props) => {
     const storyId = data.id; // Replace with the actual story ID
 
     try {
-      const liked = await isStoryLiked(user.uid, storyId);
+      const liked = await isStoryLiked(userId, storyId);
       setIsLiked(liked);
     } catch (error) {
       console.error('Error checking if story is liked:', error);
@@ -40,20 +44,25 @@ const LibraryBookCard = (props) => {
     }
   };
 
-    // Function to get the book symbol based on the genre
-    const getBookSymbol = (genre) => {
-      switch (genre) {
-        case 'Fantasy':
-          return require('../assets/cards/symbols/fantasy.png');
-        case 'Sci-Fi':
-          return require('../assets/cards/symbols/sciFi.png');
-        case 'Classic Twist':
-          return require('../assets/cards/symbols/classicTwist.png');
-        case 'Romance':
-          return require('../assets/cards/symbols/romance.png');
-      }
-    };
+  const checkIfFeatured = async () => {
+    const featuredStories = await getCurrentFeaturedStories();
+    const hasFeaturedStory = featuredStories.some((story) => story.creator === data.creator);
+    setIsFeatured(hasFeaturedStory);
+  };
 
+  // Function to get the book symbol based on the genre
+  const getBookSymbol = (genre) => {
+    switch (genre) {
+      case 'Fantasy':
+        return require('../assets/cards/symbols/fantasy.png');
+      case 'Sci-Fi':
+        return require('../assets/cards/symbols/sciFi.png');
+      case 'Classic Twist':
+        return require('../assets/cards/symbols/classicTwist.png');
+      case 'Romance':
+        return require('../assets/cards/symbols/romance.png');
+    }
+  };
 
   return (
     <View style={styles.cardContainer}>
@@ -61,7 +70,7 @@ const LibraryBookCard = (props) => {
         <Image style={styles.book} source={require('../assets/cards/book.png')} />
         <View style={styles.contentContainer}>
           <View style={styles.bookSymbolCircle}>
-          <Image style={styles.bookSymbol} source={getBookSymbol(data.genre)} />
+            <Image style={styles.bookSymbol} source={getBookSymbol(data.genre)} />
           </View>
         </View>
       </View>
@@ -72,12 +81,17 @@ const LibraryBookCard = (props) => {
             <Text style={styles.title}>{data.title}</Text>
           </View>
         )}
-        <Text style={styles.author}>{data.creator}</Text>
+        <View style={styles.authorContainer}>
+          {isFeatured && (
+            <Image style={styles.authorIcon} source={require('../assets/wizardHat.png')} />
+          )}
+          <Text style={styles.author}>{data.creator}</Text>
+        </View>
         <View style={styles.promptContainer}>
           <Text style={styles.prompt}>{data.prompt}</Text>
         </View>
       </View>
- 
+
       {isLiked && (
         <View style={styles.heartCircle}>
           <TouchableOpacity>
@@ -123,7 +137,16 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: '700',
     width: 120,
-    marginTop: -7
+    marginTop: -7,
+  },
+  authorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  authorIcon: {
+    width: 20,
+    height: 20,
+    marginRight: 5,
   },
   author: {
     color: 'white',
@@ -187,4 +210,9 @@ const styles = StyleSheet.create({
     marginTop: 35,
     marginLeft: -30,
   },
+  authorIcon:{
+    width: 10,
+    height: 10,
+    marginRight: 5
+  }
 });

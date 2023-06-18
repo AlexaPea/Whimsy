@@ -117,51 +117,88 @@ const JudgeScreen = ({ navigation }) => {
           </View>
 
           <ScrollView style={styles.scrollViewContainer}>
-              {selectedTab === 'featStories' ? (
-                featStories
-                  .filter(
-                    (story) => selectedGenre === 'All' || story.genre === selectedGenre
-                  )
-                  .map((story, index) => (
+            {selectedTab === 'featStories' ? (
+              featStories
+                .filter(
+                  (story) => selectedGenre === 'All' || story.genre === selectedGenre
+                )
+                .map((story, index) => {
+                  const isCreator = story.userId === user.uid;
+                  let destinationScreen = '';
+
+                  if (isCreator && userRole === 'judge') {
+                    destinationScreen = 'JudgeStory';
+                  } else if (isCreator) {
+                    destinationScreen = 'ReadOwnStory';
+                  } else {
+                    destinationScreen = 'ReadStory';
+                  }
+
+                  return (
                     <TouchableOpacity
                       key={index}
-                      onPress={() => navigation.navigate('JudgeStory', { story })}
+                      onPress={() => navigation.navigate(destinationScreen, { story })}
                     >
                       <LibraryBookCard order={index + 1} data={story} />
                     </TouchableOpacity>
-                  ))
-              ) : (
-                <>
+                  );
+                })
+            ) : (
+              <>
                 {selectedGenre === 'All' ? (
                   genres.map((genre) => (
                     <View key={genre}>
-                      {/* <Text style={styles.genreTitle}>{genre}</Text> */}
-                      {allStories[genre].map((story, index) => (
-                        <TouchableOpacity
-                          key={index}
-                          onPress={() => navigation.navigate('JudgeStory', { story })}
-                        >
-                          <CompBookCard number={index < 10 ? index + 1 : ''} data={story} />
-                        </TouchableOpacity>
-                      ))}
+                      {allStories[genre].map((story, index) => {
+                        const isCreator = story.userId === user.uid;
+                        let destinationScreen = '';
+
+                        if (isCreator && userRole === 'judge') {
+                          destinationScreen = 'JudgeStory';
+                        } else if (isCreator) {
+                          destinationScreen = 'ReadOwnStory';
+                        } else {
+                          destinationScreen = 'ReadStory';
+                        }
+
+                        return (
+                          <TouchableOpacity
+                            key={index}
+                            onPress={() => navigation.navigate(destinationScreen, { story })}
+                          >
+                            <CompBookCard number={index < 10 ? index + 1 : ''} data={story} />
+                          </TouchableOpacity>
+                        );
+                      })}
                     </View>
                   ))
                 ) : (
                   <View key={selectedGenre}>
-                    {/* <Text style={styles.genreTitle}>{selectedGenre}</Text> */}
-                    {allStories[selectedGenre].map((story, index) => (
-                      <TouchableOpacity
-                        key={index}
-                        onPress={() => navigation.navigate('JudgeStory', { story })}
-                      >
-                        <CompBookCard number={index < 10 ? index + 1 : ''} data={story} />
-                      </TouchableOpacity>
-                    ))}
+                    {allStories[selectedGenre].map((story, index) => {
+                      const isCreator = story.userId === user.uid;
+                      let destinationScreen = '';
+
+                      if (isCreator && userRole === 'judge') {
+                        destinationScreen = 'JudgeStory';
+                      } else if (isCreator) {
+                        destinationScreen = 'ReadOwnStory';
+                      } else {
+                        destinationScreen = 'ReadStory';
+                      }
+
+                      return (
+                        <TouchableOpacity
+                          key={index}
+                          onPress={() => navigation.navigate(destinationScreen, { story })}
+                        >
+                          <CompBookCard number={index < 10 ? index + 1 : ''} data={story} />
+                        </TouchableOpacity>
+                      );
+                    })}
                   </View>
                 )}
-                </>
-              )}
-            </ScrollView>
+              </>
+            )}
+          </ScrollView>
 
           <View style={styles.dropdownContainer}>
             <Picker
@@ -223,7 +260,6 @@ const styles = StyleSheet.create({
     opacity: 0.4
   },
   activeTab: {
-    // borderBottomColor: 'white',
     opacity: 1
   },
   activeTabText: {

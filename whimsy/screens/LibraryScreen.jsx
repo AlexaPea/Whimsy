@@ -7,21 +7,21 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { getAllStoriesFromCollection } from '../services/firebaseDb';
 import { getCurrentUser } from '../services/firebaseAuth';
 import { getUserRoleFromDatabase } from '../services/firebaseDb';
+import { getAllBookmarkedStories } from '../services/firebaseDb';
 
 const LibraryScreen = () => {
-
-
 
   const [fontLoaded, setFontLoaded] = useState(false);
   const [selectedGenre, setSelectedGenre] = useState('');
   const [stories, setStories] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
   const navigation = useNavigation();
-  const userId = userUid; 
   const [subHeadingText, setSubHeadingText] = useState('All Stories');
   const [userRole, setUserRole] = useState(null);
   const user = getCurrentUser();
   const userUid = user ? user.uid : null;
+  const userId = userUid; 
+  const [selectedTab, setSelectedTab] = useState('myStories');
   
   useEffect(() => {
     const fetchUserRole = async () => {
@@ -50,11 +50,15 @@ const LibraryScreen = () => {
 
   useFocusEffect(
     useCallback(() => {
-      getAllStories();
+      if (selectedTab === 'myBookmarks') {
+        getAllBookmarks();
+      } else {
+        getAllStories();
+      }
       return () => {
         // Cleanup when not viewing the screen
       };
-    }, [selectedGenre, navigation, ])
+    }, [selectedTab, selectedGenre])
   );
 
   const getAllStories = async () => {
@@ -65,6 +69,15 @@ const LibraryScreen = () => {
     setRefreshing(false);
   };
 
+  const getAllBookmarks = async () => {
+    setRefreshing(true);
+    const bookmarkedStories = await getAllBookmarkedStories(userUid);
+    console.log(bookmarkedStories);
+    setStories(bookmarkedStories);
+    setRefreshing(false);
+  };
+
+
   useEffect(() => {
     getAllStories();
   }, []);
@@ -74,6 +87,15 @@ const LibraryScreen = () => {
     setSubHeadingText(genre ? genre : 'All Stories');
   };
 
+  const handleTabChange = (tab) => {
+    setSelectedTab(tab);
+    if (tab === 'myBookmarks') {
+      getAllBookmarks();
+    } else {
+      getAllStories();
+    }
+  };
+  
   return (
     <ImageBackground
       source={require('../assets/bg/general.png')}
@@ -146,33 +168,36 @@ const LibraryScreen = () => {
             </View>
           </View>
 
-          <Text style={styles.subHeading}>{subHeadingText}</Text>
+          <View style={styles.tabContainer}>
+            <Text style={[styles.tabText, selectedTab === 'myStories' ? { opacity: 1 } : { opacity: 0.4 }]} onPress={() => setSelectedTab('myStories')}>All Stories</Text>
+            <Text style={[styles.tabText, selectedTab === 'myBookmarks' ? { opacity: 1 } : { opacity: 0.4 }]} onPress={() => setSelectedTab('myBookmarks')}>My Bookmarks</Text>
+          </View>
+          {/* <Text style={styles.subHeading}>{subHeadingText}</Text> */}
           <ScrollView style={styles.scrollView}>
-      
-      {stories
-        .filter(story => !selectedGenre || story.genre === selectedGenre)
-        .map((story, index) => {
-          const isCreator = story.userId === userId;
-          let destinationScreen = '';
+  {stories
+    .filter(story => !selectedGenre || story.genre === selectedGenre)
+    .map((story, index) => {
+      const isCreator = story.userId === userId;
+      let destinationScreen = '';
 
-          if (isCreator && userRole === 'judge') {
-            destinationScreen = 'JudgeStory';
-          } else if (isCreator) {
-            destinationScreen = 'ReadOwnStory';
-          } else {
-            destinationScreen = 'ReadStory';
-          }
+      if (isCreator && userRole === 'judge') {
+        destinationScreen = 'JudgeStory';
+      } else if (isCreator) {
+        destinationScreen = 'ReadOwnStory';
+      } else {
+        destinationScreen = 'ReadStory';
+      }
 
-          return (
-            <TouchableOpacity
-              key={index}
-              onPress={() => navigation.navigate(destinationScreen, { story })}
-            >
-              <LibraryBookCard data={story} />
-            </TouchableOpacity>
-          );
-        })}
-          </ScrollView>
+      return (
+        <TouchableOpacity
+          key={index}
+          onPress={() => navigation.navigate(destinationScreen, { story })}
+        >
+          <LibraryBookCard data={story} />
+        </TouchableOpacity>
+      );
+    })}
+</ScrollView>
         </View>
       )}
     </ImageBackground>
@@ -290,4 +315,18 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
+  tabContainer: {
+    position: 'absolute',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingLeft: 20,
+    paddingRight: 220,
+    marginTop: 480
+  },
+  tabText: {
+    color: 'white',
+    fontWeight: '600',
+    fontSize: 18,
+    marginRight: 50
+  }
 });
