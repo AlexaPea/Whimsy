@@ -1,5 +1,5 @@
 import { StyleSheet, Image, View } from 'react-native';
-import React from 'react';
+import React, {useState, useEffect} from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import LibraryScreen from '../screens/LibraryScreen';
 import HomeScreen from '../screens/HomeScreen';
@@ -7,8 +7,29 @@ import CompScreen from '../screens/CompScreen';
 import WriteScreenOne from '../screens/write/WriteScreenOne';
 import * as Font from 'expo-font';
 import OwnStoryScreen from '../screens/OwnStoryScreen';
+import JudgeScreen from '../screens/JudgeScreen';
+import { getUserRoleFromDatabase } from '../services/firebaseDb';
+import { getCurrentUser } from '../services/firebaseAuth';
 
 const HomeTab = () => {
+  const [userRole, setUserRole] = useState(null);
+  const user = getCurrentUser()
+
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      try {
+        const userRole = await getUserRoleFromDatabase(user.uid);
+        console.log("Role: " + userRole);
+        setUserRole(userRole);
+      } catch (error) {
+        console.log("Error retrieving current user:", error);
+      }
+    };
+
+    fetchUserRole();
+  }, []);
+
+
   const Tab = createBottomTabNavigator();
 
   const CustomTabBarIcon = ({ icon, focused }) => (
@@ -68,18 +89,33 @@ const HomeTab = () => {
           ),
         }}
       />
-      <Tab.Screen
-        name="Write"
-        component={OwnStoryScreen}
-        options={{
-          tabBarIcon: ({ focused }) => (
-            <CustomTabBarIcon
-              icon={require('../assets/icons/write.png')}
-              focused={focused}
-            />
-          ),
-        }}
-      />
+      {userRole === 'creator' ? (
+        <Tab.Screen
+          name="Write"
+          component={OwnStoryScreen}
+          options={{
+            tabBarIcon: ({ focused }) => (
+              <CustomTabBarIcon
+                icon={require('../assets/icons/write.png')}
+                focused={focused}
+              />
+            ),
+          }}
+        />
+      ) : userRole === 'judge' ? (
+        <Tab.Screen
+          name="Judge"
+          component={JudgeScreen}
+          options={{
+            tabBarIcon: ({ focused }) => (
+              <CustomTabBarIcon
+                icon={require('../assets/icons/judge.png')}
+                focused={focused}
+              />
+            ),
+          }}
+        />
+      ) : null}
     </Tab.Navigator>
   );
 };

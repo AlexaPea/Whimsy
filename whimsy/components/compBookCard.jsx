@@ -1,11 +1,14 @@
 import { StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import * as Font from 'expo-font';
+import { getCurrentUser } from '../services/firebaseAuth';
+import { isStoryLiked } from '../services/firebaseDb';
 
 const LibraryBookCard = (props) => {
   const [fontLoaded, setFontLoaded] = useState(false);
   const { data, number } = props;
   const numberRank = number;
+  const user = getCurrentUser()
 
   useEffect(() => {
     const loadFonts = async () => {
@@ -25,17 +28,31 @@ const LibraryBookCard = (props) => {
   }, []);
 
   const checkIfLiked = async () => {
-    const userId = userUid; // Replace with the actual user ID
+    const userId = user.uid; // Replace with the actual user ID
     const storyId = data.id; // Replace with the actual story ID
 
     try {
-      const liked = await isStoryLiked(userId, storyId);
+      const liked = await isStoryLiked(user.uid, storyId);
       setIsLiked(liked);
     } catch (error) {
       console.error('Error checking if story is liked:', error);
       // Handle the error
     }
   };
+
+    // Function to get the book symbol based on the genre
+    const getBookSymbol = (genre) => {
+      switch (genre) {
+        case 'Fantasy':
+          return require('../assets/cards/symbols/fantasy.png');
+        case 'Sci-Fi':
+          return require('../assets/cards/symbols/sciFi.png');
+        case 'Classic Twist':
+          return require('../assets/cards/symbols/classicTwist.png');
+        case 'Romance':
+          return require('../assets/cards/symbols/romance.png');
+      }
+    };
 
 
   return (
@@ -44,7 +61,7 @@ const LibraryBookCard = (props) => {
         <Image style={styles.book} source={require('../assets/cards/book.png')} />
         <View style={styles.contentContainer}>
           <View style={styles.bookSymbolCircle}>
-            <Image style={styles.bookSymbol} source={require('../assets/cards/symbols/sword.png')} />
+          <Image style={styles.bookSymbol} source={getBookSymbol(data.genre)} />
           </View>
         </View>
       </View>

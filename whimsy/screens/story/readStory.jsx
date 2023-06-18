@@ -147,7 +147,7 @@ const ReadStory = ({ navigation, route }) => {
   return (
     <KeyboardAvoidingView behavior="padding" style={styles.container}>
       <ImageBackground source={require('../../assets/bg/page.png')} style={styles.backgroundImage}>
-        <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('Library')}>
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
           <Image source={require('../../assets/backBtn.png')} style={styles.backBtn} />
         </TouchableOpacity>
 

@@ -1,6 +1,6 @@
 //importining components and features
 import { StyleSheet, Text, View, ImageBackground, Button, TouchableOpacity, TextInput, ScrollView } from 'react-native'
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import * as Font from 'expo-font';
 import { registerNewUser } from '../services/firebaseAuth';
 
@@ -15,23 +15,33 @@ const RegisterScreen = ({ navigation }) => {
     setFontLoaded(true);
   };
 
-  React.useEffect(() => {
+  const getRole = (newValue) => {
+    // console.log("Registering...");
+    const domain = newValue.split('@')[1]; // Extract the domain from the email
+    const roleName = domain === 'whimsy.com' ? 'judge' : 'creator'; // Update the role names as needed
+    setRole(roleName);
+    console.log(role);
+  };
+
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [username, setUsername] = useState('');
+  const [role, setRole] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const registerUser = () => {
+    console.log("Registering...");
+    registerNewUser(username, email, password, role);
+  };
+
+  useEffect(() => {
     loadFonts();
   }, []);
 
-  //input state values
-  const  [email, setEmail] = useState('');
-  const  [password, setPassword] = useState('');
-  const  [username, setUsername] = useState('');
-  const  [loading, setLoading] = useState(false);
-
-
-  //function to execute authRegister
-  const registerUser = () =>{
-    console.log("Registering...");
-    registerNewUser(username, email, password)
-  }
-
+  useEffect(() => {
+    console.log(role);
+    getRole(email);
+  }, [email]);
   return (
      // <ScrollView>
     <ImageBackground
@@ -53,13 +63,14 @@ const RegisterScreen = ({ navigation }) => {
           onChangeText={newValue => setUsername(newValue)}
           />
 
-          <TextInput 
-          style={styles.input} 
-          keyboardType='email-address'
-          placeholderTextColor="rgba(255, 255, 255, 0.76)"
-          placeholder='Email'
-          defaultValue={email}    
-          onChangeText={newValue => setEmail(newValue)}
+        <TextInput
+            style={styles.input}
+            keyboardType='email-address'
+            placeholderTextColor="rgba(255, 255, 255, 0.76)"
+            placeholder='Email'
+            defaultValue={email}
+            onChangeText={setEmail}
+            onBlur={() => getRole(email)}
           />
 
           <TextInput 

@@ -1,9 +1,11 @@
 import { StyleSheet, Text, View, ImageBackground, Button, TouchableOpacity, TextInput, ScrollView, Alert, ActivityIndicator, Image } from 'react-native'
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import * as Font from 'expo-font';
+import { getCurrentFeaturedStories } from '../../services/firebaseDb';
 
-const Contents = ({navigation}) => {
+const Contents = ({ navigation }) => {
   const [fontLoaded, setFontLoaded] = useState(false);
+  const [featuredStories, setFeaturedStories] = useState([]);
 
   const loadFonts = async () => {
     await Font.loadAsync({
@@ -12,17 +14,31 @@ const Contents = ({navigation}) => {
     setFontLoaded(true);
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     loadFonts();
+    fetchFeaturedStories();
   }, []);
+
+  const fetchFeaturedStories = async () => {
+    try {
+      const stories = await getCurrentFeaturedStories();
+      setFeaturedStories(stories);
+    } catch (error) {
+      console.log('Error fetching featured stories:', error);
+    }
+  };
+
+  const handleStoryPress = (story) => {
+    navigation.navigate('ReadStory', { story });
+  };
+  
 
   return (
     <ImageBackground
       source={require('../../assets/bg/page.png')}
       style={styles.backgroundImage}
     >
-
-    <TouchableOpacity
+      <TouchableOpacity
         style={styles.backButton}
         onPress={() => navigation.goBack()}
       >
@@ -31,22 +47,28 @@ const Contents = ({navigation}) => {
 
       {fontLoaded ? (
         <>
-        <View style={styles.container}>
-          <Text style={styles.heading}>Contents: </Text>
-          <Text style={styles.body}>Embrace the charm of monthly genre gems, handpicked to offer you the absolute best.</Text>
-        </View>
-{/* 
-        <View style={styles.ContentsContainer}>
-            <Text style={styles.heading}>Contents: </Text>
-             <Text style={styles.body}>Embrace the charm of monthly genre gems, handpicked to offer you the absolute best.</Text>
-        </View> */}
+          <View style={styles.container}>
+            <Text style={styles.heading}>Contents</Text>
+            <Text style={styles.body}>Embrace the charm of monthly genre gems, handpicked to offer you the absolute best.</Text>
+          </View>
+
+          {featuredStories.map((story) => (
+            <TouchableOpacity
+              key={story.id}
+              style={styles.containerBody}
+              onPress={() => handleStoryPress(story)}
+            >
+              <Text style={styles.subheading}>{story.genre}</Text>
+              <Text style={styles.title}>{story.title} - {story.creator} </Text>
+            </TouchableOpacity>
+          ))}
         </>
       ) : null}
     </ImageBackground>
   );
-}
+};
 
-export default Contents
+export default Contents;
 
 const styles = StyleSheet.create({
   backgroundImage: {
@@ -56,9 +78,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 30,
   },
   container: {
-    flex: 1,
-    justifyContent: 'center',
     alignItems: 'center',
+    marginTop: 100,
+  },
+  containerBody: {
+    textAlign: 'left',
+    marginTop: 10,
   },
   heading: {
     fontFamily: 'Hensa',
@@ -68,12 +93,26 @@ const styles = StyleSheet.create({
     lineHeight: 50,
     textAlign: 'center',
   },
+  subheading: {
+    fontSize: 24,
+    color: 'white',
+    fontWeight: 'bold',
+    paddingLeft: 20,
+  },
   body: {
     color: 'white',
-    width: 250,
+    width: 290,
     paddingTop: 5,
     paddingBottom: 40,
     textAlign: 'center',
+  },
+  title:{
+    color: 'white',
+    width: 290,
+    paddingTop: 5,
+    paddingBottom: 40,
+    textAlign: 'left',
+    marginLeft: 60
   },
   logoutButton: {
     position: 'absolute',
@@ -90,8 +129,8 @@ const styles = StyleSheet.create({
     left: 40,
     zIndex: 1,
   },
-  backBtn:{
+  backBtn: {
     width: 50,
-    height: 50
-  }
+    height: 50,
+  },
 });

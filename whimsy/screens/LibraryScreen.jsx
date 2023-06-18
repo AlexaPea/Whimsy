@@ -6,11 +6,11 @@ import { globalStyles } from '../utils/GlobalStyles';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { getAllStoriesFromCollection } from '../services/firebaseDb';
 import { getCurrentUser } from '../services/firebaseAuth';
+import { getUserRoleFromDatabase } from '../services/firebaseDb';
 
 const LibraryScreen = () => {
-  const user = getCurrentUser();
-  const userUid = user.uid;
-  // console.log(userUid);
+
+
 
   const [fontLoaded, setFontLoaded] = useState(false);
   const [selectedGenre, setSelectedGenre] = useState('');
@@ -19,7 +19,23 @@ const LibraryScreen = () => {
   const navigation = useNavigation();
   const userId = userUid; 
   const [subHeadingText, setSubHeadingText] = useState('All Stories');
-
+  const [userRole, setUserRole] = useState(null);
+  const user = getCurrentUser();
+  const userUid = user ? user.uid : null;
+  
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      try {
+        const userRole = await getUserRoleFromDatabase(userUid);
+        console.log("Role: " + userRole);
+        setUserRole(userRole);
+      } catch (error) {
+        console.log("Error retrieving current user:", error);
+      }
+    };
+  
+    fetchUserRole();
+  }, [userUid]);
 
   const loadFonts = async () => {
     await Font.loadAsync({
@@ -132,21 +148,30 @@ const LibraryScreen = () => {
 
           <Text style={styles.subHeading}>{subHeadingText}</Text>
           <ScrollView style={styles.scrollView}>
-            {stories
-              .filter(story => !selectedGenre || story.genre === selectedGenre)
-              .map((story, index) => {
-                const isCreator = story.userId === userId;
-                const destinationScreen = isCreator ? 'ReadOwnStory' : 'ReadStory';
+      
+      {stories
+        .filter(story => !selectedGenre || story.genre === selectedGenre)
+        .map((story, index) => {
+          const isCreator = story.userId === userId;
+          let destinationScreen = '';
 
-                return (
-                  <TouchableOpacity
-                    key={index}
-                    onPress={() => navigation.navigate(destinationScreen, { story })}
-                  >
-                    <LibraryBookCard data={story} />
-                  </TouchableOpacity>
-                );
-              })}
+          if (isCreator && userRole === 'judge') {
+            destinationScreen = 'JudgeStory';
+          } else if (isCreator) {
+            destinationScreen = 'ReadOwnStory';
+          } else {
+            destinationScreen = 'ReadStory';
+          }
+
+          return (
+            <TouchableOpacity
+              key={index}
+              onPress={() => navigation.navigate(destinationScreen, { story })}
+            >
+              <LibraryBookCard data={story} />
+            </TouchableOpacity>
+          );
+        })}
           </ScrollView>
         </View>
       )}

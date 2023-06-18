@@ -5,23 +5,24 @@ import { useState } from "react";
 import {createUserInDb} from "./firebaseDb";
 
 
-//TODO: Register a user
-export const registerNewUser = (username, email, password) =>{
-createUserWithEmailAndPassword(auth, email, password)
-.then( async(userCredential) => {
-    // Signed in 
+//Register a user
+export const registerNewUser = async (username, email, password, role) => {
+  try {
+    // Register the user using the provided email and password
+
+    // After successful registration, create the user in the database
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
-    console.log("New User " + user)
-    updateAuthProfile(username);
-    // Create user in db
-    await createUserInDb(username, email, user.uid)
-  })
-  .catch((error) => {
-    const errorCode = error.code;
-    const errorMessage = error.message;
-    console.log(errorCode + ": " + errorMessage)
-  });
-}
+
+    // Create the user in the database with the provided role
+    await createUserInDb(username, email, user.uid, role);
+
+    console.log("User registered successfully");
+  } catch (error) {
+    console.log("Something went wrong during registration: " + error);
+  }
+};
+
 
 
 
@@ -33,7 +34,7 @@ export const signInUser = (email, password) =>{
         const user = userCredential.user;
         console.log("User: " + user.email)
         // Success Alert
-        Alert.alert("You're in!", "You hace successfully logged in.",[
+        Alert.alert("You're in!", "You have successfully logged in.",[
             {text: 'Thanks', onPress: () => {}}
           ])
     })

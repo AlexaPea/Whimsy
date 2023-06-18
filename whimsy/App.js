@@ -20,14 +20,14 @@ import ReadStory from './screens/story/readStory';
 import ReadOwnStory from './screens/story/readOwnStory';
 import Cover from './screens/book/cover';
 import Contents from './screens/book/cotentsScreen';
+import JudgeScreen from './screens/JudgeScreen';
+import JudgeStory from './screens/story/judgeStory';
 
 //for each nav we have, we need to go create it
 const Stack = createNativeStackNavigator();
 
 export default function App() {
 
-  /*TODO: Set up nav*/
-  /*TODO: Check if user is logged in*/
 
   
   const [loggedIn, setLoggedIn] = useState(false)
@@ -49,6 +49,8 @@ export default function App() {
     return unsubscribe;
     
   }, [])
+
+  
 
   return (
     //Root for navigation
@@ -115,6 +117,14 @@ export default function App() {
             <Stack.Screen 
               name="Contents" 
               component={Contents}/>
+
+            <Stack.Screen 
+              name="Judge" 
+              component={JudgeScreen}/>
+
+            <Stack.Screen 
+              name="JudgeStory" 
+              component={JudgeStory}/>
 
 
             </>

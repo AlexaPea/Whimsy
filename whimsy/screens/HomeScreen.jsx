@@ -1,12 +1,13 @@
 //importining components and features
 import { StyleSheet, Text, View, ImageBackground, Button, TouchableOpacity, TextInput, ScrollView, Alert, ActivityIndicator, Image } from 'react-native'
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import * as Font from 'expo-font';
 import { globalStyles } from '../utils/GlobalStyles';
 import Constants from 'expo-constants';
 import { setStatusBarBackgroundColor } from 'expo-status-bar';
 import { signOutUser } from '../services/firebaseAuth';
 import { getCurrentUser } from '../services/firebaseAuth';
+import { getUserRoleFromDatabase } from '../services/firebaseDb';
 
 const HomeScreen = () => {
   const [fontLoaded, setFontLoaded] = useState(false);
@@ -22,7 +23,23 @@ const HomeScreen = () => {
     loadFonts();
   }, []);
 
+
+  const [userRole, setUserRole] = useState(null);
   const user = getCurrentUser()
+
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      try {
+        const userRole = await getUserRoleFromDatabase(user.uid);
+        console.log("Role: " + userRole);
+        setUserRole(userRole);
+      } catch (error) {
+        console.log("Error retrieving current user:", error);
+      }
+    };
+
+    fetchUserRole();
+  }, []);
   
   return (
     <ImageBackground
@@ -32,7 +49,7 @@ const HomeScreen = () => {
       {fontLoaded ? (
         <>
         <Text style={styles.heading}>Hey {user.displayName}!</Text>
-        <Text style={styles.body}>Our favourite creator.</Text>
+        <Text style={styles.body}>Our favourite {userRole}.</Text>
 
         <TouchableOpacity style={styles.logoutButton}  onPress={() => {signOutUser()}}>
             <Image source={require('../assets/logout-icon.png')} style={styles.logoutIcon} />
