@@ -15,7 +15,7 @@
 <p align="center">
 
 <a href="https://github.com/AlexaPea/Whimsy">
-<img src="whimsy/assets/Main.jpg" alt="main" width="230">
+<img src="whimsy/assets/Main.jpg" alt="main" width="80%">
 
 </a>
 
