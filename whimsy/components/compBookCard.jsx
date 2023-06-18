@@ -8,6 +8,7 @@ import { getCurrentFeaturedStories } from '../services/firebaseDb';
 const LibraryBookCard = (props) => {
   const [fontLoaded, setFontLoaded] = useState(false);
   const { data, number } = props;
+  console.log(data);
   const numberRank = number;
   const user = getCurrentUser();
   const [isFeatured, setIsFeatured] = useState(false);

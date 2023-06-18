@@ -30,6 +30,7 @@ const WriteScreenThree = ({ navigation, route }) => {
     source={require('../../assets/bg/general.png')}
     style={styles.backgroundImage}
   >
+    <ScrollView>
 
     <TouchableOpacity
             style={styles.backButton}
@@ -60,6 +61,7 @@ const WriteScreenThree = ({ navigation, route }) => {
         </TouchableOpacity>
       </View>
     )}
+    </ScrollView>
   </ImageBackground>
   )
 }
@@ -79,7 +81,7 @@ const styles = StyleSheet.create({
     display: 'flex'
   },
   bodyContainer:{
-    marginTop: 280,
+    marginTop: 310,
     flex: 1
   },
   heading: {
@@ -117,13 +119,13 @@ const styles = StyleSheet.create({
     paddingTop:20,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: -0,
-    marginBottom: -25
+    marginTop: 60,
+    marginBottom: 10
   },
   backButton: {
     position: 'absolute',
     top: 70,
-    left: 40,
+    left: 0,
     zIndex: 1,
   },
   backBtn:{
@@ -138,7 +140,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(130, 94, 49, 0.94)',
     borderRadius: 20,
     paddingLeft: 20,
-    marginBottom:0,
+    marginBottom:-20,
     marginLeft:10,
     color: 'white'
   },

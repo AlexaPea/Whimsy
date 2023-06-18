@@ -38,7 +38,7 @@ const libraryBookCard = (props) => {
       </View>
       <View style={styles.infoContainer}>
         <Text style={styles.title}>{data.title}</Text>
-        <Text style={styles.author}>{data.creator}</Text>
+        <Text style={styles.author}>{user.displayName}</Text>
         <View style={styles.promptContainer}>
           <Text style={styles.prompt}>{data.prompt}</Text>
         </View>

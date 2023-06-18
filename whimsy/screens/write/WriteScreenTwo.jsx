@@ -15,16 +15,16 @@ const WriteScreenTwo = ({ navigation, route }) => {
     setFontLoaded(true);
   };
 
-  const generateRandomPrompt = () => {
-    const prompts = [
-      'mysterious island.',
-      'detective',
-      'a magical pen.'
-    ];
-    const randomPrompt = prompts[Math.floor(Math.random() * prompts.length)];
-    setStoryPrompt(randomPrompt);
-    setIsPromptClicked(true);
-  };
+  // const generateRandomPrompt = () => {
+  //   const prompts = [
+  //     'mysterious island.',
+  //     'detective',
+  //     'a magical pen.'
+  //   ];
+  //   const randomPrompt = prompts[Math.floor(Math.random() * prompts.length)];
+  //   setStoryPrompt(randomPrompt);
+  //   setIsPromptClicked(true);
+  // };
 
   React.useEffect(() => {
     loadFonts();
@@ -32,6 +32,46 @@ const WriteScreenTwo = ({ navigation, route }) => {
 
   const continueToNextScreen = () => {
     navigation.navigate('WriteThree', { genre: route.params.genre, prompt: storyPrompt });
+  };
+
+
+  const generateRandomPrompt = () => {
+    const prompts = [
+      'Forgotten treasure',
+      'Whispering voices',
+      'Unexpected reunion',
+      'Wishing stone',
+      'Parallel dimension',
+      'Secret society',
+      'Last survivor',
+      'Haunted twist',
+      'Time traveler',
+      'Missing artifact',
+      'Talking animal',
+      'Cursed object',
+      'Long-lost relative',
+      'Hidden doorway',
+      'Hidden talent',
+      'Strange phenomenon',
+      'Mythical legend',
+      'Mysterious letter',
+      'Future seer',
+      'Dark secrets',
+      'Mistaken identity',
+      'Healing melodies',
+      'Scientific experiment',
+      'Youth fountain',
+      'Prophecy fulfilled',
+      'Remote cabin',
+      'Memory eraser',
+      'Parallel universes',
+      'Forbidden love',
+      'Painted message'
+    ];
+    
+    const randomPrompt = prompts[Math.floor(Math.random() * prompts.length)];
+    setStoryPrompt(randomPrompt);
+    setIsPromptClicked(true);
   };
 
   return (
@@ -121,8 +161,9 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: -0,
-    marginBottom: -25
+    marginTop: 460,
+    marginBottom: -25,
+    position: 'absolute'
   },
   backButton: {
     position: 'absolute',
@@ -138,14 +179,14 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 20,
     textAlign: 'center',
-    marginTop: 20,
+    marginTop: 80,
   },
   chest: {
     justifyContent: 'center',
     alignItems: 'center',
   },
   chestImg: {
-    width: 200,
+    width: 250,
     height: 200,
   }
 });

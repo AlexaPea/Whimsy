@@ -1,7 +1,7 @@
 //USER COLLECTION
 //================================================================
 
-import { Timestamp, addDoc, collection, doc, setDoc, getDocs, orderBy, query, where, getDoc, deleteDoc, updateDoc } from "firebase/firestore"
+import { Timestamp, addDoc, collection, doc, setDoc, getDocs, orderBy, query, where, getDoc, deleteDoc, updateDoc, deleteDocs  } from "firebase/firestore"
 import { db } from "../firebase"
 // import { uploadToStorage } from "./firebaseStorage";
 
@@ -377,6 +377,24 @@ export const getAllBookmarkedStories = async (userId) => {
     return [];
   }
 };
+
+export const deleteCollectionData = async (collectionName) => {
+  try {
+    // Get all documents in the collection
+    console.log(collectionName);
+    const snapshot = await getDocs(collection(db, collectionName));
+
+    // Delete each document in the collection
+    snapshot.forEach(async (doc) => {
+      await deleteDoc(doc.ref);
+    });
+
+    console.log("Collection data cleared successfully");
+  } catch (error) {
+    console.log("Something went wrong while clearing collection data: " + error);
+  }
+};
+
 
 
 

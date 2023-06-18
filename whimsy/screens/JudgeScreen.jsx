@@ -8,6 +8,7 @@ import CompBookCard from '../components/compBookCard';
 import LibraryBookCard from '../components/libraryBookCard';
 import { Picker } from '@react-native-picker/picker';
 import orderBy from 'lodash/orderBy';
+import deleteCollectionData from '../services/firebaseDb'
 
 const JudgeScreen = ({ navigation }) => {
   const [fontLoaded, setFontLoaded] = useState(false);
@@ -70,6 +71,24 @@ const JudgeScreen = ({ navigation }) => {
       };
     }, [])
   );
+  
+  
+  const handleClearLibrary = async () => {
+
+    console.log("click");
+    // Clear the "stories" collection
+    await deleteCollectionData('stories');
+
+    // Clear the "likes" collection
+    await deleteCollectionData('likes');
+
+    // Clear the "bookmarks" collection
+    await deleteCollectionData('bookmarks');
+
+    // Refresh the data
+    getAllStories();
+    getFeatures();
+  };
 
   return (
     <ImageBackground
@@ -80,6 +99,17 @@ const JudgeScreen = ({ navigation }) => {
         <>
           <Text style={styles.heading}>Judge of Tales</Text>
           <Text style={styles.body}>Select the most captivating stories for Whimsy's storybook.</Text>
+
+          <View style={styles.createContainer}>
+            <Text style={styles.headingTwo}>Monthly Reset</Text>
+            <Text style={styles.bodyTwo}>Embrace the beauty of new beginnings as we bid farewell to old stories.</Text>
+
+            <TouchableOpacity style={styles.button} onPress={handleClearLibrary}>
+            <ImageBackground source={require('../assets/btn/bg.png')} style={styles.btnBackground}>
+              <Text style={styles.btnText}>Clear Library</Text>
+            </ImageBackground>
+          </TouchableOpacity>
+          </View>
 
           <View style={styles.tabContainer}>
             <TouchableOpacity
@@ -129,9 +159,9 @@ const JudgeScreen = ({ navigation }) => {
                   if (isCreator && userRole === 'judge') {
                     destinationScreen = 'JudgeStory';
                   } else if (isCreator) {
-                    destinationScreen = 'ReadOwnStory';
+                    destinationScreen = 'JudgeStory';
                   } else {
-                    destinationScreen = 'ReadStory';
+                    destinationScreen = 'JudgeStory';
                   }
 
                   return (
@@ -155,9 +185,9 @@ const JudgeScreen = ({ navigation }) => {
                         if (isCreator && userRole === 'judge') {
                           destinationScreen = 'JudgeStory';
                         } else if (isCreator) {
-                          destinationScreen = 'ReadOwnStory';
+                          destinationScreen = 'JudgeStory';
                         } else {
-                          destinationScreen = 'ReadStory';
+                          destinationScreen = 'JudgeStory';
                         }
 
                         return (
@@ -180,9 +210,9 @@ const JudgeScreen = ({ navigation }) => {
                       if (isCreator && userRole === 'judge') {
                         destinationScreen = 'JudgeStory';
                       } else if (isCreator) {
-                        destinationScreen = 'ReadOwnStory';
+                        destinationScreen = 'JudgeStory';
                       } else {
-                        destinationScreen = 'ReadStory';
+                        destinationScreen = 'JudgeStory';
                       }
 
                       return (
@@ -247,7 +277,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingLeft: 20,
     paddingRight: 30,
-    marginTop: 10,
+    marginTop: 25,
   },
   tabTextContainer: {
     borderBottomWidth: 2,
@@ -269,14 +299,14 @@ const styles = StyleSheet.create({
   },
   scrollViewContainer: {
     flex: 1,
-    marginTop: 330,
+    marginTop: 545,
     marginLeft: 40,
-    height: 400,
+    height: 210,
     position: 'absolute'
   },
   dropdownContainer: {
     position: 'absolute',
-    top: 255,
+    top: 475,
     left: 50,
     zIndex: 1,
     width: 150,
@@ -293,5 +323,60 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginTop: 20,
     marginBottom: 10,
+  },
+  subHeading: {
+    color: 'white',
+    fontWeight: '600',
+    fontSize: 18,
+    paddingLeft: 20,
+    marginTop: 30
+  },
+  button: {
+    width: 207,
+    height: 59,
+    borderRadius: 20,
+    marginTop: -20,
+    paddingTop: 0,
+  },
+  btnBackground: {
+    resizeMode: 'contain',
+    width: 257,
+    height: 59,
+    borderRadius: 20,
+    padding: 10,
+    alignItems: 'center',
+  },
+  btnText: {
+    fontFamily: 'Hensa',
+    fontSize: 22,
+    color: 'white',
+    width: 350,
+    textAlign: 'center',
+    alignItems: 'center',
+    paddingTop: 8
+  },
+  createContainer: {
+    backgroundColor: '#C29753',
+    height: 220,
+    width: 350,
+    padding: 20,
+    paddingLeft: 30,
+    borderRadius: 20,
+    marginTop: -15
+  },
+  bodyTwo: {
+    color: 'white',
+    width: 300,
+    paddingTop: 0,
+    paddingBottom: 40,
+  },
+  headingTwo: {
+    fontFamily: 'Hensa',
+    fontSize: 32,
+    color: 'white',
+    width: 350,
+    paddingTop: 0,
+    // paddingLeft: 20,
+    lineHeight: 50,
   },
 });
