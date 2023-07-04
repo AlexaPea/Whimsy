@@ -4,6 +4,7 @@ import * as Font from 'expo-font';
 import { signOutUser } from '../services/firebaseAuth';
 import { getCurrentUser } from '../services/firebaseAuth';
 import { getUserRoleFromDatabase } from '../services/firebaseDb';
+import BackgroundMusicPlayer from '../components/BackgroundMusicPlayer';
 
 const HomeScreen = ({ navigation }) => {
   const [fontLoaded, setFontLoaded] = useState(false);
@@ -56,6 +57,8 @@ const HomeScreen = ({ navigation }) => {
         <>
           <Text style={styles.heading}>Hey {user.displayName}!</Text>
           <Text style={styles.body}>Our favourite {userRole}.</Text>
+
+          <BackgroundMusicPlayer />
 
           <TouchableOpacity style={styles.logoutButton} onPress={signOutUser}>
             <Image source={require('../assets/logout-icon.png')} style={styles.logoutIcon} />

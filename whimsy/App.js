@@ -25,6 +25,7 @@ import JudgeStory from './screens/story/judgeStory';
 import OwnStoryScreen from './screens/OwnStoryScreen';
 import ReadBookmarkedStory from './screens/story/readBookmarkedStory'
 import ReadOwnDraft from './screens/story/readOwnDraft';
+import BackgroundMusicPlayer from './components/BackgroundMusicPlayer'
 
 //for each nav we have, we need to go create it
 const Stack = createNativeStackNavigator();
@@ -58,6 +59,7 @@ export default function App() {
   return (
     //Root for navigation
     <NavigationContainer style={styles.nav} theme={navigationTheme}>
+          
       <Stack.Navigator  initialRouteName='Splash' screenOptions={{headerShown: false}}>
       {!loggedIn ? (
         //Show these screens when user isn't logged in

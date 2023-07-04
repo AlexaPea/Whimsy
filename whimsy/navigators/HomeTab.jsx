@@ -11,6 +11,7 @@ import JudgeScreen from '../screens/JudgeScreen';
 import { getUserRoleFromDatabase } from '../services/firebaseDb';
 import { getCurrentUser } from '../services/firebaseAuth';
 
+
 const HomeTab = () => {
   const [userRole, setUserRole] = useState(null);
   const user = getCurrentUser()

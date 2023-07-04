@@ -9,6 +9,7 @@ import { getAllStoriesFromCollection } from '../services/firebaseDb';
 import { getCurrentUser } from '../services/firebaseAuth';
 import { getUserRoleFromDatabase } from '../services/firebaseDb';
 import { getAllBookmarkedStories } from '../services/firebaseDb';
+import TouchableWithSound from '../components/TouchableWithSound';
 
 const LibraryScreen = () => {
 
