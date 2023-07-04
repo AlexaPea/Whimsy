@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -16,17 +16,15 @@ import {
 } from 'react-native';
 import * as Font from 'expo-font';
 import { getCurrentUser } from '../../services/firebaseAuth';
-import { updateStory } from '../../services/firebaseDb';
-import DeleteModal from '../../components/modals/DeleteModal';
-import { addStoryToBookmarkCollection, removeStoryFromBookmarkCollection, isStoryBookmarked, updateVotes, addLikesToCollection, removeLikesFromCollection, isStoryLiked   } from '../../services/firebaseDb';
-
+import { updateDraft, deleteDraftFromCollection, addBedTimeStoryToCollection } from '../../services/firebaseDb';
+import DeleteDraftModal from '../../components/modals/DeleteDraftModal';
 
 
 const CustomTextInput = React.forwardRef(({ style, ...props }, ref) => {
   return <TextInput ref={ref} style={style} {...props} />;
 });
 
-const ReadStory = ({ navigation, route }) => {
+const ReadOwnDraft = ({ navigation, route }) => {
   const [fontLoaded, setFontLoaded] = useState(false);
   const [menuVisible, setMenuVisible] = useState(false);
   const slideAnimation = useRef(new Animated.Value(0)).current;
@@ -38,18 +36,14 @@ const ReadStory = ({ navigation, route }) => {
   const [editableBody, setEditableBody] = useState(story.story);
   const [editMode, setEditMode] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false); // Add deleteModalVisible state
-  const [liked, setLiked] = useState(false);
-  const [bookmarked, setBookmarked] = useState(false);
-  const [votes, setVotes] = useState(story.votes);
-
-
-  const user = getCurrentUser();
-  const userUid = user.uid;
-
-  // const isItBookmarked = isBookmarked(user.uid, route.params.story.id);
-  // console.log("working:" + isItBookmarked);
-
-
+  const [isCompleteClicked, setIsCompleteClicked] = useState(false);
+  const [isCompleteEditClicked, setIsCompleteEditClicked] = useState(false);
+  const [isBinClicked, setIsBinClicked] = useState(false);
+  const [activeEditCompleteButton, setActiveEditCompleteButton] = useState('');
+  const [activeCompleteButton, setActiveCompleteButton] = useState('');
+  const [activeButton, setActiveButton] = useState('');
+  const [activeBinButton, setActiveBinButton] = useState('');
+ console.log(storyId);
 
   const loadFonts = async () => {
     await Font.loadAsync({
@@ -60,21 +54,7 @@ const ReadStory = ({ navigation, route }) => {
   };
 
   React.useEffect(() => {
-    // Define an async function inside useEffect
-    const fetchData = async () => {
-      // Retrieve the bookmark status for the current user and update the state
-      const isBookmarked = await isStoryBookmarked(user.uid, route.params.story.id);
-      setBookmarked(isBookmarked);
-
-      // Retrieve the liked status for the current user and update the state
-      const isLiked = await isStoryLiked(user.uid, route.params.story.id);
-      setLiked(isLiked);
-
-      loadFonts();
-    };
-  
-    // Call the async function
-    fetchData();
+    loadFonts();
   }, []);
 
   const toggleMenu = () => {
@@ -89,62 +69,116 @@ const ReadStory = ({ navigation, route }) => {
     }).start();
   };
 
-  const bookmarkStory = async (storyId) => {
-    const isBookmarked = await isStoryBookmarked(user.uid, route.params.story.id);
+  const editStory = async () => {
+    setEditMode(true);
+    setEditableTitle(story.title);
+  };
+
+  const updateDraftData = async () => {
+    try {
+      await updateDraft(story.id, editableTitle, editableBody);
+      setEditMode(false);
+      setEditableBody(editableBody);
+      setEditableTitle(editableTitle);
+      const updatedStory = { ...story, title: editableTitle, story: editableBody };
+      setStory(updatedStory);
+
+      // Activate the "Completed" button
+      setActiveButton('completed');
+
+      // Revert back after a second
+      setTimeout(() => {
+        setActiveButton('');
+      }, 1000);
+
+    } catch (error) {
+      console.log('Something went wrong: ' + error);
+    }
+  };
+
+  const deleteStoryModal = () => {
+    setDeleteModalVisible(true); // Show the delete modal
+  };
+
+  const handleCompleteClick = () => {
+    setIsCompleteEditClicked(!isCompleteEditClicked);
+    // Activate the "Completed" button
+    setActiveCompleteButton('completed');
+
+    // Revert back after a second
+    setTimeout(() => {
+      setActiveCompleteButton('');
+    }, 1000);
+  };
+
+  const handleCompleteEditClick = () => {
+    setIsCompleteEditClicked(!isCompleteEditClicked);
+    // Activate the "Completed" button
+    setActiveEditCompleteButton('completed');
+
+    // Revert back after a second
+    setTimeout(() => {
+      setActiveEditCompleteButton('');
+    }, 1000);
+  };
+
+  const completeStory = async () => {
+    if (story) {
+      var creatorInfo = getCurrentUser();
   
-    if (isBookmarked) {
-      // Story is already bookmarked, so remove it from the bookmarked collection in the database
-      removeStoryFromBookmarkCollection(user.uid, route.params.story.id)
-        .then(() => {
-          console.log('Story removed from bookmarks successfully');
-          setBookmarked(false); // Update the bookmarked state to false
-        })
-        .catch((error) => {
-          console.log('Something went wrong: ' + error);
-        });
+      var BedTimeStory = {
+        title: story.title,
+        genre: story.genre,
+        prompt: story.prompt,
+        story: story.story,
+        creator: creatorInfo.displayName,
+        userId: creatorInfo.uid,
+        votes: 0,
+        time: Date.now(),
+      };
+  
+      console.log("Draft Story: " + JSON.stringify(BedTimeStory));
+  
+      const success = await addBedTimeStoryToCollection(BedTimeStory);
+  console.log(success);
+      if (success) {
+        console.log("Added story successfully");
+  
+        deleteDraftFromCollection(storyId)
+          .then(() => {
+            console.log("Story deleted successfully");
+            setLoading(false);
+            navigation.navigate('Home');
+          })
+          .catch(error => {
+            console.log("Something went wrong: " + error);
+            // Handle the error appropriately
+          });
+      } else {
+        // console.log("Oops.... adding story");
+        // setLoading(true)
+        //navigation.navigate('Home');
+        // Alert.alert("Oops! Something went wrong")
+      }
     } else {
-      // Story is not bookmarked, so add it to the bookmarked collection in the database
-      console.log(route.params.story.id);
-      console.log(userUid);
-      addStoryToBookmarkCollection(route.params.story.id, userUid)
-        .then(() => {
-          console.log('Story bookmarked successfully');
-          setBookmarked(true); // Update the bookmarked state to true
-        })
-        .catch((error) => {
-          console.log('Something went wrong: ' + error);
-        });
+      Alert.alert("Oops! Please add all the project info");
     }
   };
   
 
-  const likeStory = async () => {
-    console.log(votes);
-    try {
-      if (liked) {
-        // If the story is already liked, remove the vote
-        const votesNow = votes - 1;
-        console.log(votesNow);
-        await updateVotes(route.params.story.id, votesNow);
-        setLiked(false);
-        setVotes(votes - 1);
-        removeLikesFromCollection(route.params.story.id, user.uid); // Call the removeLikesFromCollection function
-      } else {
-        // If the story is not liked, add a vote
-        addLikesToCollection(route.params.story.id, user.uid); // Call the addLikesToCollection function
-        const votesNow = votes + 1;
-        console.log(votesNow);
-        await updateVotes(route.params.story.id, votesNow);
-        setLiked(true);
-        setVotes(votes + 1);
-      }
-    } catch (error) {
-      console.log("Something went wrong in updating votes: " + error);
-      throw error;
-    }
+  const handleBinClick = () => {
+    setIsBinClicked(!isBinClicked);
+          // Activate the "Completed" button
+          setActiveBinButton('completed');
+
+          // Revert back after a second
+          setTimeout(() => {
+            setActiveBinButton('');
+          }, 1000);
+    
   };
-  
-  
+
+
 
   return (
     <KeyboardAvoidingView behavior="padding" style={styles.container}>
@@ -172,18 +206,18 @@ const ReadStory = ({ navigation, route }) => {
             )}
 
             {editMode ? (
-             <ScrollView style={styles.scrollViewStory}>
-              <CustomTextInput
-                style={styles.storyBody}
-                multiline
-                scrollView
-                value={editableBody}
-                onChangeText={(text) => setEditableBody(text)}
-              />
-               </ScrollView>
+              <ScrollView style={styles.scrollViewStory}>
+                <CustomTextInput
+                  style={styles.storyBody}
+                  multiline
+                  scrollView
+                  value={editableBody}
+                  onChangeText={(text) => setEditableBody(text)}
+                />
+              </ScrollView>
             ) : (
               <ScrollView style={styles.scrollViewStory}>
-              <Text  scrollView style={styles.storyBody}>{story.story}</Text>
+                <Text style={styles.storyBody}>{story.story}</Text>
               </ScrollView>
             )}
           </ScrollView>
@@ -213,48 +247,57 @@ const ReadStory = ({ navigation, route }) => {
             </TouchableOpacity>
 
             <View style={styles.menuContent}>
-            <TouchableOpacity
-              style={bookmarked ? styles.menuIconActive : styles.menuIcon}
-              onPress={bookmarkStory}
-            >
-              <Image
-                style={styles.menuIconImage}
-                source={
-                  bookmarked
-                    ? require('../../assets/save-icon-filled.png')
-                    : require('../../assets/save-icon.png')
-                }
-              />
-</TouchableOpacity>
-            <TouchableOpacity
-              style={liked ? styles.menuIconActive : styles.menuIcon}
-              onPress={likeStory}
-            >
-              <Image
-                style={styles.menuIconImage}
-                source={
-                  liked
-                    ? require('../../assets/heart-icon-filled.png')
-                    : require('../../assets/heart-icon2.png')
-                }
-              />
-            </TouchableOpacity>
+              <TouchableOpacity
+                style={editMode ? styles.menuIconActive : styles.menuIcon}
+                onPress={editStory}
+              >
+                <Image style={styles.menuIconImage} source={require('../../assets/edit-icon.png')} />
+              </TouchableOpacity>
 
+              <TouchableOpacity
+                 style={activeEditCompleteButton === 'completed' ? styles.menuIconClicked : styles.menuIcon}
+                onPress={() => {
+                  updateDraftData();
+                  handleCompleteEditClick();
+                  ;
+                }}
+              >
+                <Image style={styles.menuIconImage} source={require('../../assets/save-edit.png')} />
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                 style={activeCompleteButton === 'completed' ? styles.menuIconClicked : styles.menuIcon}
+                onPress={() => {
+                  completeStory();
+                  handleCompleteClick();
+                }}
+              >
+                <Image style={styles.menuIconImage} source={require('../../assets/complete-icon.png')} />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={activeBinButton === 'completed' ? styles.menuIconClicked : styles.menuIcon}
+                onPress={() => {
+                  deleteStoryModal();
+                  handleBinClick();
+                }}
+              >
+                <Image style={styles.menuIconImage} source={require('../../assets/bin-icon.png')} />
+              </TouchableOpacity>
             </View>
           </View>
         </Animated.View>
 
         {deleteModalVisible && (
-        <View style={styles.modalOverlay}>
-           <DeleteModal onClose={() => setDeleteModalVisible(false)} storyId={storyId} navigation={navigation} />
-        </View>
+          <View style={styles.modalOverlay}>
+            <DeleteDraftModal onClose={() => setDeleteModalVisible(false)} storyId={storyId} navigation={navigation} />
+          </View>
         )}
       </ImageBackground>
     </KeyboardAvoidingView>
   );
 };
 
-export default ReadStory;
+export default ReadOwnDraft;
 
 const { width, height } = Dimensions.get('window');
 
@@ -345,7 +388,7 @@ const styles = StyleSheet.create({
   },
   tag: {
     position: 'absolute',
-    top: 5,
+    top: 35,
     left: -30,
     width: 30,
     height: 56,
@@ -365,7 +408,7 @@ const styles = StyleSheet.create({
   menu: {
     position: 'relative',
     width: 80,
-    height: 175,
+    height: 300,
     backgroundColor: '#867452',
     borderRadius: 30,
     zIndex: 2,
@@ -394,8 +437,16 @@ const styles = StyleSheet.create({
     width: 55,
     height: 55,
     borderRadius: 50,
-    backgroundColor: '#6B8DFF', // Change this to the desired color
-    backgroundColor: '#6B8DFF', // Change this to the desired color
+    backgroundColor: '#6B8DFF',
+  },
+  menuIconClicked: {
+    marginBottom: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 55,
+    height: 55,
+    borderRadius: 50,
+    backgroundColor: '#6B8DFF',
   },
   modalOverlay: {
     ...StyleSheet.absoluteFillObject,
@@ -418,7 +469,5 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontFamily: 'MagicalNight',
     alignSelf: 'flex-start',
-    flex: 1,
   },
-  
 });

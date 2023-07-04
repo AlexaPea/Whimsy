@@ -1,7 +1,8 @@
 //USER COLLECTION
 //================================================================
 
-import { Timestamp, addDoc, collection, doc, setDoc, getDocs, orderBy, query, where, getDoc, deleteDoc, updateDoc, deleteDocs  } from "firebase/firestore"
+import {query as createQuery, addDoc, collection, doc, setDoc, getDocs, orderBy, query, where, getDoc, deleteDoc, updateDoc } from "firebase/firestore";
+
 import { db } from "../firebase"
 // import { uploadToStorage } from "./firebaseStorage";
 
@@ -53,10 +54,10 @@ export const addBedTimeStoryToCollection = async (story) => {
   try {
     const docRef = await addDoc(collection(db, 'stories'), story);
     console.log('Added story successfully...' + docRef.id);
-    // return true;
+    return true;
   } catch (error) {
     console.log('Something went wrong: ' + error);
-    // return false;
+    return false;
   }
 };
 
@@ -141,26 +142,40 @@ export const updateStory = async (storyId, title, body) => {
   
 export const addStoryToBookmarkCollection = async (storyId, userId) => {
   try {
-    const storyRef = doc(db, "bookmarks", storyId);
+    // Get the story data from the "stories" collection
+    const storyRef = doc(db, "stories", storyId);
     const snapshot = await getDoc(storyRef);
-    const data = snapshot.data();
-    
-    // Add the user ID and story ID to the bookmarked data
-    const bookmarkedData = {
-      ...data,
-      bookmarkedBy: userId,
-      storyId: storyId
-    };
-    
-    const docRef = await addDoc(collection(db, 'bookmarks'), bookmarkedData);
-    console.log('Added story to bookmarks successfully...', docRef.id);
+    const storyData = snapshot.data();
+
+    // Get the existing bookmarked data for the user
+    const bookmarkRef = collection(db, 'bookmarks');
+    const query = createQuery(bookmarkRef, where('bookmarkedBy', '==', userId));
+    const bookmarkSnapshot = await getDocs(query);
+    const bookmarkedData = bookmarkSnapshot.docs.map(doc => doc.data());
+
+    // Check if the story is already bookmarked by the user
+    const isBookmarked = bookmarkedData.some(data => data.storyId === storyId);
+
+    if (isBookmarked) {
+      console.log('Story is already bookmarked by the user.');
+    } else {
+      // Add the user ID and story ID to the bookmarked data
+      const newBookmarkData = {
+        ...storyData,
+        bookmarkedBy: userId,
+        storyId: storyId
+      };
+
+      // Add the new bookmarked data to the "bookmarks" collection
+      const docRef = await addDoc(collection(db, 'bookmarks'), newBookmarkData);
+      console.log('Added story to bookmarks successfully...', docRef.id);
+    }
   } catch (error) {
     console.log('Something went wrong: ' + error);
   }
 };
 
 
-  
 export const removeStoryFromBookmarkCollection = async (userId, storyId) => {
   try {
     const userUid = userId;
@@ -182,19 +197,40 @@ export const removeStoryFromBookmarkCollection = async (userId, storyId) => {
   }
 };
 
+export const isStoryBookmarked = async (userId, storyId) => {
+  const userUid = userId;
+  const bookmarkQuery = query(
+    collection(db, 'bookmarks'),
+    where('bookmarkedBy', '==', userUid),
+    where('storyId', '==', storyId)
+  );
 
-  export const isStoryBookmarked = async (userId, storyId) => {
-    const userUid = userId;
-    const bookmarkQuery = query(
-      collection(db, 'bookmarks'),
-      where('bookmarkedBy', '==', userUid),
-      where('storyId', '==', storyId)
+  const querySnapshot = await getDocs(bookmarkQuery);
+  console.log(!querySnapshot.empty);
+  return !querySnapshot.empty;
+};
+
+export const getAllBookmarkedStories = async (userId) => {
+  try {
+    const bookmarkedStories = [];
+    // console.log(userId);
+    const snapshot = await getDocs(
+      query(
+        collection(db, "bookmarks"),
+        where("bookmarkedBy", "==", userId)
+      )
     );
-  
-    const querySnapshot = await getDocs(bookmarkQuery);
-    console.log(!querySnapshot.empty);
-    return !querySnapshot.empty;
-  };
+    snapshot.forEach((doc) => {
+      bookmarkedStories.push({ ...doc.data(), id: doc.id });
+    });
+    // console.log(bookmarkedStories);
+    return bookmarkedStories;
+  } catch (error) {
+    console.log("Error retrieving bookmarked stories:", error);
+    return [];
+  }
+};
+
   
 //Handle Votes
 //================================================================================================
@@ -283,6 +319,39 @@ export const getCurrentUserDrafts = async (userId) => {
   }
 }
 
+export const updateDraft = async (storyId, title, body) => {
+  try {
+    const storyRef = doc(db, "drafts", storyId);
+    const snapshot = await getDoc(storyRef);
+    const data = snapshot.data();
+    
+    // Merge the updated title and body with the existing data
+    const updatedData = {
+      ...data,
+      title: title,
+      story: body,
+    };
+    
+    await setDoc(storyRef, updatedData);
+  } catch (error) {
+    console.log("Something went wrong in db: " + error);
+    throw error; 
+  }
+};
+
+
+export const deleteDraftFromCollection = async (storyId) => {
+  try {
+    // Delete the story document from the "stories" collection
+    await deleteDoc(doc(db, "drafts", storyId));
+    console.log("Draft deleted successfully");
+
+    onClose();
+  } catch (error) {
+    console.log("Something went wrong: " + error);
+  }
+};
+
 //================================================================================
 //Feature stories:
 
@@ -357,26 +426,6 @@ export const getCurrentFeaturedStories = async () => {
 }
 
 
-export const getAllBookmarkedStories = async (userId) => {
-  try {
-    const bookmarkedStories = [];
-    console.log(userId);
-    const snapshot = await getDocs(
-      query(
-        collection(db, "bookmarks"),
-        where("bookmarkedBy", "==", userId)
-      )
-    );
-    snapshot.forEach((doc) => {
-      bookmarkedStories.push({ ...doc.data(), id: doc.id });
-    });
-    console.log(bookmarkedStories);
-    return bookmarkedStories;
-  } catch (error) {
-    console.log("Error retrieving bookmarked stories:", error);
-    return [];
-  }
-};
 
 export const deleteCollectionData = async (collectionName) => {
   try {

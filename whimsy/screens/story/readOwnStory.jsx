@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -36,6 +36,11 @@ const ReadOwnStory = ({ navigation, route }) => {
   const [editableBody, setEditableBody] = useState(story.story);
   const [editMode, setEditMode] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false); // Add deleteModalVisible state
+  const [isCompleteClicked, setIsCompleteClicked] = useState(false);
+  const [isBinClicked, setIsBinClicked] = useState(false);
+  const [activeButton, setActiveButton] = useState('');
+  const [activeBinButton, setActiveBinButton] = useState('');
+
 
   const loadFonts = async () => {
     await Font.loadAsync({
@@ -74,6 +79,15 @@ const ReadOwnStory = ({ navigation, route }) => {
       setEditableTitle(editableTitle);
       const updatedStory = { ...story, title: editableTitle, story: editableBody };
       setStory(updatedStory);
+
+      // Activate the "Completed" button
+      setActiveButton('completed');
+
+      // Revert back after a second
+      setTimeout(() => {
+        setActiveButton('');
+      }, 1000);
+
     } catch (error) {
       console.log('Something went wrong: ' + error);
     }
@@ -81,6 +95,22 @@ const ReadOwnStory = ({ navigation, route }) => {
 
   const deleteStoryModal = () => {
     setDeleteModalVisible(true); // Show the delete modal
+  };
+
+  const handleCompleteClick = () => {
+    setIsCompleteClicked(!isCompleteClicked);
+  };
+
+  const handleBinClick = () => {
+    setIsBinClicked(!isBinClicked);
+          // Activate the "Completed" button
+          setActiveBinButton('completed');
+
+          // Revert back after a second
+          setTimeout(() => {
+            setActiveBinButton('');
+          }, 1000);
+    
   };
 
   return (
@@ -109,18 +139,18 @@ const ReadOwnStory = ({ navigation, route }) => {
             )}
 
             {editMode ? (
-             <ScrollView style={styles.scrollViewStory}>
-              <CustomTextInput
-                style={styles.storyBody}
-                multiline
-                scrollView
-                value={editableBody}
-                onChangeText={(text) => setEditableBody(text)}
-              />
-               </ScrollView>
+              <ScrollView style={styles.scrollViewStory}>
+                <CustomTextInput
+                  style={styles.storyBody}
+                  multiline
+                  scrollView
+                  value={editableBody}
+                  onChangeText={(text) => setEditableBody(text)}
+                />
+              </ScrollView>
             ) : (
               <ScrollView style={styles.scrollViewStory}>
-              <Text  scrollView style={styles.storyBody}>{story.story}</Text>
+                <Text style={styles.storyBody}>{story.story}</Text>
               </ScrollView>
             )}
           </ScrollView>
@@ -157,14 +187,20 @@ const ReadOwnStory = ({ navigation, route }) => {
                 <Image style={styles.menuIconImage} source={require('../../assets/edit-icon.png')} />
               </TouchableOpacity>
               <TouchableOpacity
-                style={styles.menuIcon}
-                onPress={updateStoryData}
+                 style={activeButton === 'completed' ? styles.menuIconClicked : styles.menuIcon}
+                onPress={() => {
+                  updateStoryData();
+                  handleCompleteClick();
+                }}
               >
                 <Image style={styles.menuIconImage} source={require('../../assets/complete-icon.png')} />
               </TouchableOpacity>
               <TouchableOpacity
-                style={styles.menuIcon}
-                onPress={deleteStoryModal}
+                style={activeBinButton === 'completed' ? styles.menuIconClicked : styles.menuIcon}
+                onPress={() => {
+                  deleteStoryModal();
+                  handleBinClick();
+                }}
               >
                 <Image style={styles.menuIconImage} source={require('../../assets/bin-icon.png')} />
               </TouchableOpacity>
@@ -173,9 +209,9 @@ const ReadOwnStory = ({ navigation, route }) => {
         </Animated.View>
 
         {deleteModalVisible && (
-        <View style={styles.modalOverlay}>
-           <DeleteModal onClose={() => setDeleteModalVisible(false)} storyId={storyId} navigation={navigation} />
-        </View>
+          <View style={styles.modalOverlay}>
+            <DeleteModal onClose={() => setDeleteModalVisible(false)} storyId={storyId} navigation={navigation} />
+          </View>
         )}
       </ImageBackground>
     </KeyboardAvoidingView>
@@ -322,7 +358,16 @@ const styles = StyleSheet.create({
     width: 55,
     height: 55,
     borderRadius: 50,
-    backgroundColor: '#6B8DFF', // Change this to the desired color
+    backgroundColor: '#6B8DFF',
+  },
+  menuIconClicked: {
+    marginBottom: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 55,
+    height: 55,
+    borderRadius: 50,
+    backgroundColor: '#6B8DFF',
   },
   modalOverlay: {
     ...StyleSheet.absoluteFillObject,
@@ -345,7 +390,5 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontFamily: 'MagicalNight',
     alignSelf: 'flex-start',
-    flex: 1,
   },
-  
 });

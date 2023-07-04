@@ -83,9 +83,7 @@ const LibraryBookCard = (props) => {
           </View>
         )}
         <View style={styles.authorContainer}>
-          {isFeatured && (
             <Image style={styles.authorIcon} source={require('../assets/wizardHat.png')} />
-          )}
           <Text style={styles.author}>{data.creator}</Text>
         </View>
         <View style={styles.promptContainer}>
@@ -96,7 +94,7 @@ const LibraryBookCard = (props) => {
       {isLiked && (
         <View style={styles.heartCircle}>
           <TouchableOpacity>
-            <View style={styles.heartCircle}>
+            <View style={styles.heartCircleActive}>
               <TouchableOpacity>
                 <Image
                   style={styles.heartIcon}
@@ -159,7 +157,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 8,
     alignSelf: 'flex-start',
-    maxWidth: '80%',
+    maxWidth: '90%',
     marginTop: 10,
   },
   prompt: {
@@ -200,6 +198,7 @@ const styles = StyleSheet.create({
     height: 22,
     padding: 0,
     marginTop: 2,
+    
   },
   heartCircle: {
     width: 40,
@@ -210,6 +209,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 35,
     marginLeft: -30,
+  },
+  heartCircleActive: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(143, 120, 88, 0.8)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   authorIcon:{
     width: 10,

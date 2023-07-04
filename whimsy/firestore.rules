@@ -1,0 +1,21 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if
+          request.time < timestamp.date(2023, 6, 1);
+    }
+    //rule for project collection: Need to be authenticated to view
+    match /projects/{projectId}{
+    	allow read, write: if request.auth != null;
+      
+    }
+
+    //rule for users collection: 
+      match /users/{userId}{
+    		allow read: if request.auth.uid != null;
+        allow create: if request.auth.uid != null;
+        allow update, delete: if request.auth.uid != null && request.auth.uid == userId;
+    }
+  }
+}

@@ -26,14 +26,14 @@ const CustomTextInput = React.forwardRef(({ style, ...props }, ref) => {
   return <TextInput ref={ref} style={style} {...props} />;
 });
 
-const ReadStory = ({ navigation, route }) => {
+const ReadBookmarkedStory = ({ navigation, route }) => {
   const [fontLoaded, setFontLoaded] = useState(false);
   const [menuVisible, setMenuVisible] = useState(false);
   const slideAnimation = useRef(new Animated.Value(0)).current;
   const [loading, setLoading] = useState('');
-  const [storyId, setStoryId] = useState(route.params.story.id);
+  const [storyId, setStoryId] = useState(route.params.story.storyId);
   const [story, setStory] = useState(route.params.story);
-  const [title, setTitle] = useState(route.params.title);
+  const [title, setTitle] = useState(route.params.story.title);
   const [editableTitle, setEditableTitle] = useState(story.title);
   const [editableBody, setEditableBody] = useState(story.story);
   const [editMode, setEditMode] = useState(false);
@@ -63,11 +63,11 @@ const ReadStory = ({ navigation, route }) => {
     // Define an async function inside useEffect
     const fetchData = async () => {
       // Retrieve the bookmark status for the current user and update the state
-      const isBookmarked = await isStoryBookmarked(user.uid, route.params.story.id);
+      const isBookmarked = await isStoryBookmarked(user.uid, route.params.story.storyId);
       setBookmarked(isBookmarked);
 
       // Retrieve the liked status for the current user and update the state
-      const isLiked = await isStoryLiked(user.uid, route.params.story.id);
+      const isLiked = await isStoryLiked(user.uid, route.params.story.storyId);
       setLiked(isLiked);
 
       loadFonts();
@@ -89,12 +89,13 @@ const ReadStory = ({ navigation, route }) => {
     }).start();
   };
 
+  console.log(route.params.story.storyId);
   const bookmarkStory = async (storyId) => {
-    const isBookmarked = await isStoryBookmarked(user.uid, route.params.story.id);
-  
+    const isBookmarked = await isStoryBookmarked(user.uid, route.params.story.storyId);
+  console.log("Bookmarked:" + route.params.story.storyId);
     if (isBookmarked) {
       // Story is already bookmarked, so remove it from the bookmarked collection in the database
-      removeStoryFromBookmarkCollection(user.uid, route.params.story.id)
+      removeStoryFromBookmarkCollection(user.uid, route.params.story.storyId)
         .then(() => {
           console.log('Story removed from bookmarks successfully');
           setBookmarked(false); // Update the bookmarked state to false
@@ -104,9 +105,9 @@ const ReadStory = ({ navigation, route }) => {
         });
     } else {
       // Story is not bookmarked, so add it to the bookmarked collection in the database
-      console.log(route.params.story.id);
-      console.log(userUid);
-      addStoryToBookmarkCollection(route.params.story.id, userUid)
+      // console.log(storyId);
+      // console.log(userUid);
+      addStoryToBookmarkCollection(route.params.story.storyId, userUid)
         .then(() => {
           console.log('Story bookmarked successfully');
           setBookmarked(true); // Update the bookmarked state to true
@@ -125,16 +126,16 @@ const ReadStory = ({ navigation, route }) => {
         // If the story is already liked, remove the vote
         const votesNow = votes - 1;
         console.log(votesNow);
-        await updateVotes(route.params.story.id, votesNow);
+        await updateVotes(route.params.story.storyId, votesNow);
         setLiked(false);
         setVotes(votes - 1);
-        removeLikesFromCollection(route.params.story.id, user.uid); // Call the removeLikesFromCollection function
+        removeLikesFromCollection(route.params.story.storyId, user.uid); // Call the removeLikesFromCollection function
       } else {
         // If the story is not liked, add a vote
-        addLikesToCollection(route.params.story.id, user.uid); // Call the addLikesToCollection function
+        addLikesToCollection(route.params.story.storyId, user.uid); // Call the addLikesToCollection function
         const votesNow = votes + 1;
         console.log(votesNow);
-        await updateVotes(route.params.story.id, votesNow);
+        await updateVotes(route.params.story.storyId, votesNow);
         setLiked(true);
         setVotes(votes + 1);
       }
@@ -254,7 +255,7 @@ const ReadStory = ({ navigation, route }) => {
   );
 };
 
-export default ReadStory;
+export default ReadBookmarkedStory;
 
 const { width, height } = Dimensions.get('window');
 

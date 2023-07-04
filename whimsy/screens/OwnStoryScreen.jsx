@@ -7,6 +7,7 @@ import { getCurrentUser } from '../services/firebaseAuth';
 import { getCurrentUserStories } from '../services/firebaseDb'
 import { getCurrentUserDrafts } from '../services/firebaseDb';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import ReadOwnDraft from './story/readOwnDraft';
 
 const OwnStoryScreen = ({ navigation }) => {
   const [fontLoaded, setFontLoaded] = useState(false);
@@ -44,7 +45,7 @@ const OwnStoryScreen = ({ navigation }) => {
   const getUserStories = async () => {
     setRefreshing(true);
     const stories = await getCurrentUserStories(user.uid);
-    console.log(stories);
+    // console.log(stories);
     setMyStories(stories);
     setRefreshing(false);
   };
@@ -52,7 +53,7 @@ const OwnStoryScreen = ({ navigation }) => {
   const getUserDrafts = async () => {
     setRefreshing(true);
     const drafts = await getCurrentUserDrafts(user.uid);
-    console.log(drafts);
+    // console.log(drafts);
     setMyDrafts(drafts); // Update the state to myDrafts instead of myStories
     setRefreshing(false);
   };
@@ -109,7 +110,7 @@ const OwnStoryScreen = ({ navigation }) => {
                 myDrafts.map((story, index) => (
                   <TouchableOpacity
                     key={index}
-                    onPress={() => navigation.navigate('ReadOwnStory', { story })}
+                    onPress={() => navigation.navigate('ReadOwnDraft', { story })}
                   >
                     <MyStoriesBookCard data={story} />
                   </TouchableOpacity>
@@ -141,7 +142,7 @@ const styles = StyleSheet.create({
     fontSize: 52,
     color: 'white',
     width: 350,
-    paddingTop: 15,
+    paddingTop: 10,
     paddingLeft: 20,
     lineHeight: 50,
     marginTop: -20
@@ -160,7 +161,7 @@ const styles = StyleSheet.create({
     width: 350,
     paddingLeft: 20,
     paddingTop: 0,
-    paddingBottom: 40,
+    paddingBottom:24,
   },
   bodyTwo: {
     color: 'white',
@@ -169,8 +170,8 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   scrollViewContainer: {
-    height: 258,
-    marginTop: 20
+    height: 295,
+    marginTop: 13
   },
   subHeading: {
     color: 'white',
@@ -216,7 +217,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingLeft: 20,
     paddingRight: 120,
-    marginTop: 30
+    marginTop: 20
   },
   tabText: {
     color: 'white',

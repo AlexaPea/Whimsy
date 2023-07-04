@@ -9,6 +9,7 @@ import {getFirestore} from "firebase/firestore"
 const firebaseConfig = {
   apiKey: "AIzaSyBa92PHBy0Ihf_52EtYh_l6eV13l9c3dUw",
   authDomain: "whimsy-1d667.firebaseapp.com",
+  databaseURL: "https://whimsy-1d667-default-rtdb.europe-west1.firebasedatabase.app",
   projectId: "whimsy-1d667",
   storageBucket: "whimsy-1d667.appspot.com",
   messagingSenderId: "459757932488",

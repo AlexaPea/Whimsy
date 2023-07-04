@@ -4,24 +4,40 @@ import { isStoryLiked } from '../services/firebaseDb';
 import { getCurrentUser } from '../services/firebaseAuth';
 import { getCurrentFeaturedStories } from '../services/firebaseDb';
 
-const libraryBookCard = (props) => {
+const bookmarkedBookCard = ({data}) => {
+
   const user = getCurrentUser();
   const userUid = user.uid;
-  const { data } = props;
+  // const { data } = props;
   const [isLiked, setIsLiked] = useState(false);
   const [isFeatured, setIsFeatured] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // console.log(data);
+
   useEffect(() => {
-    checkIfLiked();
-    checkIfFeatured();
-  }, [data]); // Add data as a dependency
+    fetchData();
+  }, [data]);
 
+  const fetchData = async () => {
+    setIsLoading(true);
+    try {
+      await Promise.all([checkIfLiked(), checkIfFeatured()]);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      // Handle the error
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // console.log("Data:", JSON.stringify(data));
+  // console.log("DataId:", data.storyId)
+  
+  ;
   const checkIfLiked = async () => {
     const userId = userUid;
-    const storyId = data.id;
     try {
-      const liked = await isStoryLiked(userId, storyId);
+      const liked = await isStoryLiked(userId, data.storyId);
       setIsLiked(liked);
     } catch (error) {
       console.error('Error checking if story is liked:', error);
@@ -88,7 +104,7 @@ const libraryBookCard = (props) => {
   );
 };
 
-export default libraryBookCard;
+export default bookmarkedBookCard;
 
 const styles = StyleSheet.create({
   cardContainer: {

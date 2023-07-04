@@ -1,6 +1,7 @@
 import { ScrollView, StyleSheet, Text, View, ImageBackground, Image, TouchableOpacity } from 'react-native';
 import React, { useCallback, useEffect, useState } from 'react';
 import LibraryBookCard from '../components/libraryBookCard';
+import BookmarkedBookCard from '../components/bookmarkedBookCard';
 import * as Font from 'expo-font';
 import { globalStyles } from '../utils/GlobalStyles';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
@@ -22,12 +23,13 @@ const LibraryScreen = () => {
   const userUid = user ? user.uid : null;
   const userId = userUid; 
   const [selectedTab, setSelectedTab] = useState('myStories');
+  const [isLoaded, setIsLoaded] = useState(false);
   
   useEffect(() => {
     const fetchUserRole = async () => {
       try {
         const userRole = await getUserRoleFromDatabase(userUid);
-        console.log("Role: " + userRole);
+        // console.log("Role: " + userRole);
         setUserRole(userRole);
       } catch (error) {
         console.log("Error retrieving current user:", error);
@@ -52,7 +54,7 @@ const LibraryScreen = () => {
     useCallback(() => {
       if (selectedTab === 'myBookmarks') {
         getAllBookmarks();
-      } else {
+      } else if (selectedTab === 'myStories') {
         getAllStories();
       }
       return () => {
@@ -72,15 +74,22 @@ const LibraryScreen = () => {
   const getAllBookmarks = async () => {
     setRefreshing(true);
     const bookmarkedStories = await getAllBookmarkedStories(userUid);
-    console.log(bookmarkedStories);
     setStories(bookmarkedStories);
     setRefreshing(false);
+    return Promise.resolve();
   };
 
-
-  useEffect(() => {
-    getAllStories();
-  }, []);
+useEffect(() => {
+  if (selectedTab === 'myBookmarks') {
+    getAllBookmarks().then(() => {
+      setIsLoaded(true);
+    });
+  } else if (selectedTab === 'myStories') {
+    getAllStories().then(() => {
+      setIsLoaded(true);
+    });
+  }
+}, [selectedTab]);
 
   const handleButtonPress = (genre) => {
     setSelectedGenre(genre);
@@ -91,7 +100,7 @@ const LibraryScreen = () => {
     setSelectedTab(tab);
     if (tab === 'myBookmarks') {
       getAllBookmarks();
-    } else {
+    } else if (tab === 'myStories') {
       getAllStories();
     }
   };
@@ -174,30 +183,40 @@ const LibraryScreen = () => {
           </View>
           {/* <Text style={styles.subHeading}>{subHeadingText}</Text> */}
           <ScrollView style={styles.scrollView}>
-  {stories
-    .filter(story => !selectedGenre || story.genre === selectedGenre)
-    .map((story, index) => {
-      const isCreator = story.userId === userId;
-      let destinationScreen = '';
+          {isLoaded && stories
+            .filter(story => !selectedGenre || story.genre === selectedGenre)
+            .map((story, index) => {
+              const isCreator = story.userId === userId;
+              let destinationScreen = '';
+              let CardComponent = LibraryBookCard; // Default card component
 
-      if (isCreator && userRole === 'judge') {
-        destinationScreen = 'JudgeStory';
-      } else if (isCreator) {
-        destinationScreen = 'ReadOwnStory';
-      } else {
-        destinationScreen = 'ReadStory';
-      }
+              if (selectedTab === 'myStories') {
+                if (isCreator && userRole === 'judge') {
+                  destinationScreen = 'JudgeStory';
+                } else if (isCreator) {
+                  destinationScreen = 'ReadOwnStory';
+                } else {
+                  destinationScreen = 'ReadStory';
+                }
+              } else if (selectedTab === 'myBookmarks') {
+                if (isCreator && userRole === 'judge') {
+                  destinationScreen = 'JudgeBookmarkedStory';
+                } else {
+                  destinationScreen = 'ReadBookmarkedStory';
+                  CardComponent = BookmarkedBookCard; // Use bookmarkedBookCard component
+                }
+              }
 
-      return (
-        <TouchableOpacity
-          key={index}
-          onPress={() => navigation.navigate(destinationScreen, { story })}
-        >
-          <LibraryBookCard data={story} />
-        </TouchableOpacity>
-      );
-    })}
-</ScrollView>
+              return (
+                <TouchableOpacity
+                  key={index}
+                  onPress={() => navigation.navigate(destinationScreen, { story })}
+                >
+                  <CardComponent data={story}/>
+                </TouchableOpacity>
+              );
+            })}
+    </ScrollView>
         </View>
       )}
     </ImageBackground>

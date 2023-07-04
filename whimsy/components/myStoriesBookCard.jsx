@@ -10,8 +10,7 @@ const libraryBookCard = (props) => {
 
   // Get props
   const { data } = props;
-  // console.log(data);
-
+ 
   // Function to get the book symbol based on the genre
   const getBookSymbol = (genre) => {
     switch (genre) {
