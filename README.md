@@ -41,12 +41,14 @@
     * [Reviews & Testing](#reviews--testing)
     * [Challenges, Highlights & Learnings](#challenges-highlights--learnings)
     * [Future Implementation](#future-implementation)
-* [Roadmap](#roadmap)
-* [Contributing](#contributing)
-* [Authors](#authors)
-* [License](#license)
-* [Contact](#contact)
-* [Acknowledgements](#acknowledgements)
+* [Final Outcome](#final-outcome)
+  * [Video Demonstration](#video-demonstration)
+  * [Roadmap](#roadmap)
+  * [Contributing](#contributing)
+  * [Authors](#authors)
+  * [License](#license)
+  * [Contact](#contact)
+  * [Acknowledgements](#acknowledgements)
 
 <br/>
 
@@ -204,13 +206,18 @@ In future, I would like to explore more above and beyond features. In addition t
 
 ![image4](mockups/mockup2.png)
 
+### Video Demonstration
 
-## Roadmap
+To see a run through of the application, click below:
+
+[View Demonstration](https://youtu.be/y9t7EqkfyKc)
+
+### Roadmap
 
 See the [open issues](https://github.com/AlexaPea/Whimsy-ReactNative) for a list of proposed features (and known issues).
 
 <!-- CONTRIBUTING -->
-## Contributing
+### Contributing
 
 Contributions are what makes the open-source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
 
@@ -221,22 +228,22 @@ Contributions are what makes the open-source community such an amazing place to 
 5. Open a Pull Request
 
 <!-- AUTHORS -->
-## Authors
+### Authors
 
 * **Alexa Pettitt** - [AlexaPea](https://github.com/AlexaPea/Whimsy-ReactNative)
 
 <!-- LICENSE -->
-## License
+### License
 
 This project is protected by all rights reserved. No part of this repository may be reproduced, distributed, or transmitted in any form or by any means, without the prior written permission of the repository owner.
 
 <!-- LICENSE -->
-## Contact
+### Contact
 * **Alexa Pettitt** - [alexapettitt14@gmail.com](mailto:alexapettitt14@gmail.com) - [@instagram_handle](https://www.instagram.com/byAlexaPettitt/) 
 * **Project Link** - https://github.com/AlexaPea/Whimsy-ReactNative
 
 <!-- ACKNOWLEDGEMENTS -->
-## Acknowledgements
+### Acknowledgements
 <!-- all resources that you used and Acknowledgements here -->
 * [My Lecturer: Armand Pretorius](https://github.com/Armand-OW)
 * [Stack Overflow](https://stackoverflow.com/)
